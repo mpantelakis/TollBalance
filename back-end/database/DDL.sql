@@ -1,6 +1,20 @@
+# ---------------------------------
+# Toll Balance Database DDL script
+# ---------------------------------
+
+
+/*
+ * Create the database
+ */
+
 DROP DATABASE IF EXISTS toll_balance;
 CREATE DATABASE toll_balance;
 USE toll_balance;
+
+
+/*
+ * Create the tables
+ */
 
 CREATE TABLE operators (
   id VARCHAR(4) NOT NULL,
@@ -15,10 +29,10 @@ CREATE TABLE debts (
   id INT NOT NULL AUTO_INCREMENT,
   debtor VARCHAR(4) NOT NULL,
   creditor VARCHAR(4) NOT NULL,
-  amount INT NOT NULL,
+  amount FLOAT NOT NULL,
   date_created DATE NOT NULL,
   date_paid DATE DEFAULT NULL,
-  pending boolean NOT NULL,
+  pending boolean NOT NULL DEFAULT TRUE,
   PRIMARY KEY (id),
   KEY FK_Debts_Debtor (debtor),
   KEY FK_Debts_Creditor (creditor),
@@ -74,3 +88,51 @@ CREATE TABLE toll_passes (
   CONSTRAINT FK_Toll_Pass_TagOperatorID FOREIGN KEY (tag_operator_id) REFERENCES operators (id) ON UPDATE CASCADE,
   CONSTRAINT FK_Toll_Pass_TollID FOREIGN KEY (toll_id) REFERENCES toll_stations (id) ON UPDATE CASCADE
 );
+
+
+/*
+ * Create the triggers
+ */
+
+DELIMITER //
+
+CREATE TRIGGER add_debt
+AFTER INSERT
+ON toll_passes
+FOR EACH ROW
+BEGIN
+	IF NEW.tag_operator_id != (SELECT op_id FROM toll_stations WHERE id = NEW.toll_id) THEN
+		IF EXISTS (
+			SELECT 1
+			FROM debts
+			WHERE date_created = NEW.timestamp
+				AND debtor = NEW.tag_operator_id
+				AND creditor = (
+					SELECT op_id
+					FROM toll_stations
+					WHERE id = NEW.toll_id
+				)
+		) THEN
+			UPDATE debts
+			SET amount = amount + NEW.charge
+			WHERE date_created = NEW.timestamp
+				AND debtor = NEW.tag_operator_id
+				AND creditor = (
+					SELECT op_id
+					FROM toll_stations
+					WHERE id = NEW.toll_id
+				);
+		ELSE 
+			INSERT INTO debts (debtor, creditor, amount, date_created)
+			VALUES (
+				NEW.tag_operator_id,
+				(SELECT op_id FROM toll_stations WHERE id = NEW.toll_id),
+				NEW.charge,
+				NEW.timestamp
+			);
+		END IF;
+	END IF;
+END;
+//
+
+DELIMITER ;
