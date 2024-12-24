@@ -4,12 +4,14 @@ const pool = require("../db");
 const path = require("path");
 const { parse, format } = require("date-fns");
 
+require("dotenv").config();
+
 const CustomError = require("../errors/customErrors");
 const asyncHandler = require("express-async-handler");
 
 const healthCheck = asyncHandler(async (req, res) => {
   // Replace with your actual database connection string
-  const connectionString = "mysql://root:password@localhost/toll_balance";
+  const connectionString = `mysql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/${process.env.DB_NAME}`;
 
   try {
     // Query the database to gather information
