@@ -1,30 +1,40 @@
+// Required modules for file system operations, CSV parsing, and database connection
 const fs = require("fs");
 const Papa = require("papaparse");
 const pool = require("../db");
 
+// Importing custom error handling and async handler utility
 const CustomError = require("../errors/customErrors");
 const asyncHandler = require("express-async-handler");
 
+// Handler to get toll station passes within a specific date range
 const tollStationPasses = asyncHandler(async (req, res) => {
+  // Extract toll station ID and date range from request parameters
   const { tollStationID, date_from, date_to } = req.params;
 
+  // Validate toll station ID
   if (!tollStationID) {
     throw new CustomError.BadRequest("Invalid toll station ID.");
   }
 
+  // Regular expression to validate date format (YYYYMMDD)
   const dateFormatRegex = /^\d{8}$/;
+
+  // Validate 'date_from' parameter
   if (!date_from || !dateFormatRegex.test(date_from)) {
     throw new CustomError.BadRequest(
       "Invalid 'date_from' parameter. It should be in YYYYMMDD format."
     );
   }
 
+  // Validate 'date_to' parameter
   if (!date_to || !dateFormatRegex.test(date_to)) {
     throw new CustomError.BadRequest(
       "Invalid 'date_to' parameter. It should be in YYYYMMDD format."
     );
   }
 
+  // Format the dates to YYYY-MM-DD for SQL compatibility
   const formattedDateFrom = `${date_from.slice(0, 4)}-${date_from.slice(
     4,
     6
@@ -34,6 +44,7 @@ const tollStationPasses = asyncHandler(async (req, res) => {
     6
   )}-${date_to.slice(6, 8)}`;
 
+  // SQL query to get toll station pass data
   const query = `
         WITH PassData AS (
             SELECT
@@ -80,6 +91,7 @@ const tollStationPasses = asyncHandler(async (req, res) => {
 		WHERE toll_stations.id = ?
         GROUP BY toll_stations.id;`;
 
+  // Execute the query with the provided parameters
   const [rows] = await pool.execute(query, [
     tollStationID,
     formattedDateFrom,
@@ -90,18 +102,22 @@ const tollStationPasses = asyncHandler(async (req, res) => {
     tollStationID,
   ]);
 
+  // If no data is found, return a "No Content" error
   if (rows.length === 0) {
     throw new CustomError.NoContent(
       "No data found for the specified parameters."
     );
   }
 
+  // Send the result as JSON response
   res.json(rows);
 });
 
+// Handler to analyze passes based on station and tag operator IDs and date range
 const passAnalysis = asyncHandler(async (req, res) => {
   const { stationOpID, tagOpID, date_from, date_to } = req.params;
 
+  // Validate station and tag operator IDs
   if (!stationOpID) {
     throw new CustomError.BadRequest("Invalid station operator ID.");
   }
@@ -110,6 +126,7 @@ const passAnalysis = asyncHandler(async (req, res) => {
     throw new CustomError.BadRequest("Invalid tag operator ID.");
   }
 
+  // Validate date format for 'date_from' and 'date_to'
   const dateFormatRegex = /^\d{8}$/;
   if (!date_from || !dateFormatRegex.test(date_from)) {
     throw new CustomError.BadRequest(
@@ -123,6 +140,7 @@ const passAnalysis = asyncHandler(async (req, res) => {
     );
   }
 
+  // Format the dates for SQL query
   const formattedDateFrom = `${date_from.slice(0, 4)}-${date_from.slice(
     4,
     6
@@ -132,6 +150,7 @@ const passAnalysis = asyncHandler(async (req, res) => {
     6
   )}-${date_to.slice(6, 8)}`;
 
+  // SQL query to analyze passes based on operators and date range
   const query = `
         WITH PassData AS (
             SELECT
@@ -168,6 +187,7 @@ const passAnalysis = asyncHandler(async (req, res) => {
             ) AS passList
         FROM PassData;`;
 
+  // Execute the query with the provided parameters
   const [rows] = await pool.execute(query, [
     stationOpID,
     tagOpID,
@@ -179,18 +199,22 @@ const passAnalysis = asyncHandler(async (req, res) => {
     formattedDateTo,
   ]);
 
+  // If no data is found, return a "No Content" error
   if (rows.length === 0) {
     throw new CustomError.NoContent(
       "No data found for the specified parameters."
     );
   }
 
+  // Send the result as JSON response
   res.json(rows);
 });
 
+// Handler to calculate the total cost of passes based on operator and date range
 const passesCost = asyncHandler(async (req, res) => {
   const { tollOpID, tagOpID, date_from, date_to } = req.params;
 
+  // Validate station and tag operator IDs
   if (!tollOpID) {
     throw new CustomError.BadRequest("Invalid station operator ID.");
   }
@@ -199,6 +223,7 @@ const passesCost = asyncHandler(async (req, res) => {
     throw new CustomError.BadRequest("Invalid tag operator ID.");
   }
 
+  // Validate date format for 'date_from' and 'date_to'
   const dateFormatRegex = /^\d{8}$/;
   if (!date_from || !dateFormatRegex.test(date_from)) {
     throw new CustomError.BadRequest(
@@ -212,6 +237,7 @@ const passesCost = asyncHandler(async (req, res) => {
     );
   }
 
+  // Format the dates for SQL query
   const formattedDateFrom = `${date_from.slice(0, 4)}-${date_from.slice(
     4,
     6
@@ -221,6 +247,7 @@ const passesCost = asyncHandler(async (req, res) => {
     6
   )}-${date_to.slice(6, 8)}`;
 
+  // SQL query to calculate the total cost of passes
   const query = `
         SELECT
             ? AS tollOpID,
@@ -238,6 +265,7 @@ const passesCost = asyncHandler(async (req, res) => {
             AND p.timestamp >= ?
             AND p.timestamp <= ?;`;
 
+  // Execute the query with the provided parameters
   const [rows] = await pool.execute(query, [
     tollOpID,
     tagOpID,
@@ -249,22 +277,27 @@ const passesCost = asyncHandler(async (req, res) => {
     formattedDateTo,
   ]);
 
+  // If no data is found, return a "No Content" error
   if (rows.length === 0) {
     throw new CustomError.NoContent(
       "No data found for the specified parameters."
     );
   }
 
+  // Send the result as JSON response
   res.json(rows);
 });
 
+// Handler to calculate charges for visits by different operators
 const chargesBy = asyncHandler(async (req, res) => {
   const { tollOpID, date_from, date_to } = req.params;
 
+  // Validate toll operator ID
   if (!tollOpID) {
     throw new CustomError.BadRequest("Invalid station operator ID.");
   }
 
+  // Validate date format for 'date_from' and 'date_to'
   const dateFormatRegex = /^\d{8}$/;
   if (!date_from || !dateFormatRegex.test(date_from)) {
     throw new CustomError.BadRequest(
@@ -278,6 +311,7 @@ const chargesBy = asyncHandler(async (req, res) => {
     );
   }
 
+  // Format the dates for SQL query
   const formattedDateFrom = `${date_from.slice(0, 4)}-${date_from.slice(
     4,
     6
@@ -287,6 +321,7 @@ const chargesBy = asyncHandler(async (req, res) => {
     6
   )}-${date_to.slice(6, 8)}`;
 
+  // SQL query to calculate charges by visiting operators
   const query = `
         WITH CostsData AS
         (SELECT
@@ -315,6 +350,7 @@ const chargesBy = asyncHandler(async (req, res) => {
             ) AS VOpList
         FROM CostsData;`;
 
+  // Execute the query with the provided parameters
   const [rows] = await pool.execute(query, [
     tollOpID,
     formattedDateFrom,
@@ -324,12 +360,16 @@ const chargesBy = asyncHandler(async (req, res) => {
     formattedDateTo,
   ]);
 
+  // If no data is found, return a "No Content" error
   if (rows.length === 0) {
     throw new CustomError.NoContent(
       "No data found for the specified parameters."
     );
   }
 
+  // Send the result as JSON response
   res.json(rows);
 });
+
+// Export all the handlers as a module
 module.exports = { tollStationPasses, passAnalysis, passesCost, chargesBy };
