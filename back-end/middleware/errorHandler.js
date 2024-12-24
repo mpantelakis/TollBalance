@@ -3,7 +3,7 @@ const errorHandler = (err, req, res, next) => {
 
   res.status(statusCode).json({
     status: "failed",
-    info: err.message, // Always return only the message
+    info: err.message,
   });
 };
 
