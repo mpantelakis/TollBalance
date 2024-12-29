@@ -2,9 +2,12 @@ const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
 const path = require("path");
+var cors = require("cors");
 
 // Import custom error handling middleware
 const errorHandler = require("./middleware/errorHandler");
+
+app.use(cors);
 
 // Import route handlers
 const adminRouter = require("./routes/admin");
