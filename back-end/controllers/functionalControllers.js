@@ -1,7 +1,6 @@
-// Required modules for file system operations, CSV parsing, and database connection
-const fs = require("fs");
-const Papa = require("papaparse");
+// Required modules for database connection
 const pool = require("../db");
+const json2csv = require("json2csv").parse;
 
 // Importing custom error handling and async handler utility
 const CustomError = require("../errors/customErrors");
@@ -11,6 +10,7 @@ const asyncHandler = require("express-async-handler");
 const tollStationPasses = asyncHandler(async (req, res) => {
   // Extract toll station ID and date range from request parameters
   const { tollStationID, date_from, date_to } = req.params;
+  const { format = "json" } = req.query; // Default to 'json' if format is not provided
 
   // Validate toll station ID
   if (!tollStationID) {
@@ -109,13 +109,22 @@ const tollStationPasses = asyncHandler(async (req, res) => {
     );
   }
 
-  // Send the result as JSON response
+  // If format is 'csv', convert the rows to CSV
+  if (format === "csv") {
+    const csv = json2csv(rows); // Convert rows to CSV
+    res.header("Content-Type", "text/csv");
+    res.attachment("toll_station_passes.csv");
+    return res.send(csv); // Send the CSV data
+  }
+
+  // Default to JSON format if 'csv' is not specified
   res.json(rows);
 });
 
 // Handler to analyze passes based on station and tag operator IDs and date range
 const passAnalysis = asyncHandler(async (req, res) => {
   const { stationOpID, tagOpID, date_from, date_to } = req.params;
+  const { format = "json" } = req.query; // Default to 'json' if format is not provided
 
   // Validate station and tag operator IDs
   if (!stationOpID) {
@@ -205,14 +214,22 @@ const passAnalysis = asyncHandler(async (req, res) => {
       "No data found for the specified parameters."
     );
   }
+  // If format is 'csv', convert the rows to CSV
+  if (format === "csv") {
+    const csv = json2csv(rows); // Convert rows to CSV
+    res.header("Content-Type", "text/csv");
+    res.attachment("toll_station_passes.csv");
+    return res.send(csv); // Send the CSV data
+  }
 
-  // Send the result as JSON response
+  // Default to JSON format if 'csv' is not specified
   res.json(rows);
 });
 
 // Handler to calculate the total cost of passes based on operator and date range
 const passesCost = asyncHandler(async (req, res) => {
   const { tollOpID, tagOpID, date_from, date_to } = req.params;
+  const { format = "json" } = req.query; // Default to 'json' if format is not provided
 
   // Validate station and tag operator IDs
   if (!tollOpID) {
@@ -284,13 +301,22 @@ const passesCost = asyncHandler(async (req, res) => {
     );
   }
 
-  // Send the result as JSON response
+  // If format is 'csv', convert the rows to CSV
+  if (format === "csv") {
+    const csv = json2csv(rows); // Convert rows to CSV
+    res.header("Content-Type", "text/csv");
+    res.attachment("toll_station_passes.csv");
+    return res.send(csv); // Send the CSV data
+  }
+
+  // Default to JSON format if 'csv' is not specified
   res.json(rows);
 });
 
 // Handler to calculate charges for visits by different operators
 const chargesBy = asyncHandler(async (req, res) => {
   const { tollOpID, date_from, date_to } = req.params;
+  const { format = "json" } = req.query; // Default to 'json' if format is not provided
 
   // Validate toll operator ID
   if (!tollOpID) {
@@ -367,7 +393,15 @@ const chargesBy = asyncHandler(async (req, res) => {
     );
   }
 
-  // Send the result as JSON response
+  // If format is 'csv', convert the rows to CSV
+  if (format === "csv") {
+    const csv = json2csv(rows); // Convert rows to CSV
+    res.header("Content-Type", "text/csv");
+    res.attachment("toll_station_passes.csv");
+    return res.send(csv); // Send the CSV data
+  }
+
+  // Default to JSON format if 'csv' is not specified
   res.json(rows);
 });
 
