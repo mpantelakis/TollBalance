@@ -7,7 +7,11 @@ var cors = require("cors");
 // Import custom error handling middleware
 const errorHandler = require("./middleware/errorHandler");
 
-app.use(cors);
+app.use(
+  cors({
+    methods: ["GET", "POST", "PUT", "DELETE"], // Allowed methods
+  })
+);
 
 // Import route handlers
 const adminRouter = require("./routes/admin");
