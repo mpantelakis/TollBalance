@@ -5,15 +5,17 @@
 /*
  * Populate the tables
  */
+ 
+INSERT INTO admin VALUES ("admin","$2a$10$fL1hom5KPC4Jy4n/D/SML.l0tICxdUeFuVuFNyUvnQxej3sd69VLi");
 
-INSERT INTO operators (id, name, email, username, password) VALUES ('AM', 'aegeanmotorway', 'customercare@aegeanmotorway.gr', 'aegeanmotorway', 'password');
-INSERT INTO operators (id, name, email, username, password) VALUES ('EG', 'egnatia', 'eoae@egnatia.gr', 'egnatia', 'password');
-INSERT INTO operators (id, name, email, username, password) VALUES ('GE', 'gefyra', 'info@gefyra.gr', 'gefyra', 'password');
-INSERT INTO operators (id, name, email, username, password) VALUES ('KO', 'kentrikiodos', 'customercare@kentrikiodos.gr', 'kentrikiodos', 'password');
-INSERT INTO operators (id, name, email, username, password) VALUES ('MO', 'moreas', 'info@moreas.com.gr', 'moreas', 'password');
-INSERT INTO operators (id, name, email, username, password) VALUES ('NAO', 'naodos', 'customercare@attikesdiadromes.gr', 'naodos', 'password');
-INSERT INTO operators (id, name, email, username, password) VALUES ('NO', 'neaodos', 'info@neaodos.gr', 'neaodos', 'password');
-INSERT INTO operators (id, name, email, username, password) VALUES ('OO', 'olympiaodos', 'customercare@olympiaoperation.gr', 'olympiaodos', 'password');
+INSERT INTO operators (id, name, email, username, password) VALUES ('AM','aegeanmotorway','customercare@aegeanmotorway.gr','aegeanmotorway','$2a$10$HLnQVSH/IIT8Dl76jLY1OeTN51gIIx7SOP4X4TSnfXM5yhBTVGU.i');
+INSERT INTO operators (id, name, email, username, password) VALUES ('EG','egnatia','eoae@egnatia.gr','egnatia','$2a$10$zm1jxtuU0LWhn6iT6n2DruuHeXNyCP6ryEuhsdGElJIxG.yNXG2xi');
+INSERT INTO operators (id, name, email, username, password) VALUES ('GE','gefyra','info@gefyra.gr','gefyra','$2a$10$mZ3SZaZlOkZKZZcu0vCvau9B2mIapBBaOBGJ5C0Wu2gIhDqUn7jfe');
+INSERT INTO operators (id, name, email, username, password) VALUES ('KO','kentrikiodos','customercare@kentrikiodos.gr','kentrikiodos','$2a$10$1xzutN1CPEF3Tks5Ix.L0u6HefmnLoFGIxmRpNYZ71HNhR/hR663e');
+INSERT INTO operators (id, name, email, username, password) VALUES ('MO','moreas','info@moreas.com.gr','moreas','$2a$10$QGJ8nZ3NDTD0mTwC3ZttFenMqa3pneJNCFoZhwLuZ14rHLaMa1zKm');
+INSERT INTO operators (id, name, email, username, password) VALUES ('NAO', 'naodos', 'customercare@attikesdiadromes.gr', 'naodos', '$2a$10$7u/ozifI4wRKboHO.ctu8OIm135UXaWGnD4L9zmZz.vxZEoLzeoGS');
+INSERT INTO operators (id, name, email, username, password) VALUES ('NO', 'neaodos', 'info@neaodos.gr', 'neaodos', '$2a$10$n8IUk3998QexZF57c/OVKOXII1ZFIIFo9.elPf/SZD85rw1184P1G');
+INSERT INTO operators (id, name, email, username, password) VALUES ('OO', 'olympiaodos', 'customercare@olympiaoperation.gr', 'olympiaodos', '$2a$10$sThQvnvCr9/KPhbZBPanTeVhrAgSXkEAFfx5SsBK8Cbnh.Pl/6Qka');
 
 INSERT INTO roads (name) VALUES ('Α/Δ Αθηνών-Θεσσαλονίκης');
 INSERT INTO roads (name) VALUES ('Ακτίου-Πρέβεζας');

@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const pool = require("../db");
+const bcrypt = require("bcryptjs");
 
 const CustomError = require("../errors/customErrors");
 const asyncHandler = require("express-async-handler");
@@ -25,7 +26,7 @@ const loginUser = asyncHandler(async (req, res) => {
   }
 
   // Check if the provided password matches the stored password
-  const isMatch = password == user[0].password;
+  const isMatch = await bcrypt.compare(password, user[0].password);
   if (!isMatch) {
     throw new CustomError.NotAuthorized("Invalid credentials");
   }

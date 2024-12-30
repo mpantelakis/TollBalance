@@ -90,6 +90,12 @@ CREATE TABLE toll_passes (
   CONSTRAINT FK_Toll_Pass_TollID FOREIGN KEY (toll_id) REFERENCES toll_stations (id) ON UPDATE CASCADE
 );
 
+CREATE TABLE admin (
+	username VARCHAR(30),
+    password VARCHAR(255),
+    PRIMARY KEY (username,password)
+);
+
 
 /*
  * Create the triggers
