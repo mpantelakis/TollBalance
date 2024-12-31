@@ -14,34 +14,64 @@ const loginUser = asyncHandler(async (req, res) => {
     throw new CustomError.BadRequest("Username and password are required");
   }
 
-  // Query the database to find the user by username
-  const [user] = await pool.execute(
-    "SELECT id,username,password FROM operators WHERE username = ?",
-    [username]
-  );
+  if (username == "admin") {
+    const [user] = await pool.execute(
+      "SELECT username, password FROM admin WHERE username = ?",
+      [username]
+    );
 
-  // If the user is not found, return an error
-  if (user.length === 0) {
-    throw new CustomError.NotAuthorized("Invalid credentials");
-  }
-
-  // Check if the provided password matches the stored password
-  const isMatch = await bcrypt.compare(password, user[0].password);
-  if (!isMatch) {
-    throw new CustomError.NotAuthorized("Invalid credentials");
-  }
-
-  // Generate a JWT token with the user's id and username as the payload
-  const token = jwt.sign(
-    { id: user[0].id, username: user[0].username },
-    process.env.JWT_SECRET, // Secret key for JWT signing
-    {
-      expiresIn: "2h", // Token expires in 2 hours
+    // If the user is not found, return an error
+    if (user.length === 0) {
+      throw new CustomError.NotAuthorized("Invalid credentials");
     }
-  );
 
-  // Send the token in the response
-  res.json({ token });
+    // Check if the provided password matches the stored password
+    const isMatch = await bcrypt.compare(password, user[0].password);
+    if (!isMatch) {
+      throw new CustomError.NotAuthorized("Invalid credentials");
+    }
+
+    // Generate a JWT token with the user's id and username as the payload
+    const token = jwt.sign(
+      { username: user[0].username },
+      process.env.JWT_SECRET, // Secret key for JWT signing
+      {
+        expiresIn: "1h", // Token expires in 1 hour
+      }
+    );
+
+    // Send the token in the response
+    res.json({ token });
+  } else {
+    // Query the database to find the user by username
+    const [user] = await pool.execute(
+      "SELECT id,username,password FROM operators WHERE username = ?",
+      [username]
+    );
+
+    // If the user is not found, return an error
+    if (user.length === 0) {
+      throw new CustomError.NotAuthorized("Invalid credentials");
+    }
+
+    // Check if the provided password matches the stored password
+    const isMatch = await bcrypt.compare(password, user[0].password);
+    if (!isMatch) {
+      throw new CustomError.NotAuthorized("Invalid credentials");
+    }
+
+    // Generate a JWT token with the user's id and username as the payload
+    const token = jwt.sign(
+      { id: user[0].id, username: user[0].username },
+      process.env.JWT_SECRET, // Secret key for JWT signing
+      {
+        expiresIn: "2h", // Token expires in 2 hours
+      }
+    );
+
+    // Send the token in the response
+    res.json({ token });
+  }
 });
 
 // Logout user function (just sends a 200 response to confirm logout)
