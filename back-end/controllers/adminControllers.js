@@ -2,6 +2,7 @@ const fs = require("fs");
 const Papa = require("papaparse");
 const pool = require("../db");
 const path = require("path");
+const bcrypt = require("bcryptjs");
 const { parse, format } = require("date-fns");
 
 require("dotenv").config();
@@ -252,7 +253,62 @@ const resetPasses = asyncHandler(async (req, res) => {
   await pool.query("TRUNCATE TABLE toll_passes"); // Truncate the toll_passes table
   await pool.query("ALTER TABLE toll_passes AUTO_INCREMENT = 1;"); // Reset auto-increment
 
+  const hashedPassword = await bcrypt.hash("freepasses4all", 10);
+
+  await pool.query("UPDATE admin SET password=?", [hashedPassword]);
+
   res.status(200).json({ status: "OK" });
 });
 
-module.exports = { addPasses, resetStations, resetPasses, healthCheck };
+const modifyUser = asyncHandler(async (req, res) => {
+  const { username, password } = req.body;
+
+  // Validate input
+  if (!username || !password) {
+    throw new CustomError.BadRequest("Username and password are required");
+  }
+
+  // Hash the password
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  // Update the user's password in the database
+  const [result] = await pool.execute(
+    "UPDATE operators SET password = ? WHERE username = ?",
+    [hashedPassword, username]
+  );
+
+  // Check if the user was successfully updated
+  if (result.affectedRows === 0) {
+    try {
+      await pool.execute(
+        "INSERT INTO admin (username, password) VALUES (?, ?)",
+        [username, hashedPassword]
+      );
+    } catch {
+      throw new CustomError.InternalError("error");
+    }
+  }
+
+  // Send a success response
+  res.status(200).json({ message: "success" });
+});
+
+const getUsers = asyncHandler(async (req, res) => {
+  const [users] = await pool.execute("SELECT username FROM operators;");
+  if (users.length == 0) {
+    throw new CustomError.NoContent(
+      "There are no registered users in the system!"
+    );
+  }
+
+  res.status(200).json(users);
+});
+
+module.exports = {
+  addPasses,
+  resetStations,
+  resetPasses,
+  healthCheck,
+  modifyUser,
+  getUsers,
+};
