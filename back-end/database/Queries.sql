@@ -92,6 +92,7 @@ SELECT
     ) AS passList
 FROM PassData;
 
+
 /*
  * Passes Cost
  */
@@ -142,3 +143,25 @@ SELECT
         )
     ) AS VOpList
 FROM CostsData;
+
+
+
+# --------------------------------------------------------------
+# REST API FUNCTIONALITY ENDPOINTS QUERIES FOR MANGE DEBTS PAGE
+# --------------------------------------------------------------
+
+
+/*
+ * Debts to each company
+ */
+
+SELECT
+	op.name AS creditorName,
+	ROUND(SUM(db.amount), 1) AS totalOwed
+FROM operators op
+JOIN debts db
+ON op.id = db.creditor
+WHERE db.debtor = 'NAO'
+	AND db.settled = 0
+	AND db.verified = 0
+GROUP BY (op.name);
