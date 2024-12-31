@@ -27,6 +27,7 @@ WITH PassData AS (
 	WHERE toll_id = "NAO03"
 		AND timestamp >= "2022-01-01"
 		AND timestamp <= "2022-01-31"
+	ORDER BY timestamp ASC
 )
 SELECT
 	toll_stations.id as stationID,
@@ -72,6 +73,7 @@ WITH PassData AS (
         AND p.tag_operator_id = 'EG'
         AND p.timestamp >= '2022-01-01'
         AND p.timestamp <= '2022-01-31'
+    ORDER BY timestamp ASC
 )
 SELECT
 	'NAO' AS stationOpID,
@@ -111,7 +113,7 @@ ON p.toll_id = s.id
 WHERE s.op_id = 'NAO'
 	AND p.tag_operator_id = 'EG'
 	AND p.timestamp >= '2022-01-01'
-	AND p.timestamp <= '2022-01-31';
+	AND p.timestamp <= '2022-01-31'
 
 /*
  * Charges By
