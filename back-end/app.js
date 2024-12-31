@@ -17,7 +17,7 @@ app.use(
 const adminRouter = require("./routes/admin");
 const functionalRouter = require("./routes/functional");
 const authRouter = require("./routes/authorization");
-const restRouter = require("./routes/rest");
+const websiteRouter = require("./routes/website");
 
 // Middleware to parse JSON data in request bodies
 app.use(express.json());
@@ -32,7 +32,7 @@ app.use(express.static(path.join(__dirname, "../front-end")));
 app.use("/api/admin", adminRouter); // Admin-related routes
 app.use("/api/", functionalRouter); // General functional routes
 app.use("/api/", authRouter); // Authorization-related routes
-app.use("/api/", restRouter); // Rest functional routes
+app.use("/api/", websiteRouter); // Rest functional routes
 
 // Define the port on which the app will listen
 const PORT = 9115;
