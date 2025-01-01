@@ -99,57 +99,60 @@ FROM PassData;
  * Passes Cost
  */
 
-SELECT
-	'NAO' AS tollOpID,
-    'EG' AS tagOpID,
-	DATE_FORMAT(NOW(),'%Y-%m-%d %H:%i') AS requestTimestamp,
-    '2022-01-01' AS periodFrom,
-    '2022-01-31' AS periodTo,
-	COUNT(1) AS nPasses,
-	ROUND(SUM(p.charge), 1) AS passesCost
-FROM toll_passes p
-JOIN toll_stations s
-ON p.toll_id = s.id
-WHERE s.op_id = 'NAO'
-	AND p.tag_operator_id = 'EG'
-	AND p.timestamp >= '2022-01-01'
-	AND p.timestamp <= '2022-01-31'
+SELECT (
+	SELECT
+		COUNT(1)
+	FROM toll_passes p
+	JOIN toll_stations s
+	ON p.toll_id = s.id
+	WHERE s.op_id = 'NAO'
+		AND p.tag_operator_id = 'EG'
+		AND p.timestamp >= '2022-01-01'
+		AND p.timestamp <= '2022-01-31'
+
+	) AS nPasses,
+	ROUND(SUM(amount), 1) AS passesCost
+FROM debts
+WHERE creditor = 'NAO'
+	AND debtor = 'EG'
+	AND date_created >= '2022-01-01'
+	AND date_created <= '2022-01-31'
+	AND settled = 0
+	AND verified = 0;
+
+
 
 /*
  * Charges By
  */
 
-WITH CostsData AS 
-(SELECT
-	p.tag_operator_id AS visitingOpID,
-	COUNT(1) AS nPasses,
-	ROUND(SUM(p.charge), 1) AS passesCost
-FROM toll_passes p
-JOIN toll_stations s
-ON p.toll_id = s.id
-WHERE s.op_id = 'NAO'
-	AND p.tag_operator_id != s.op_id
-	AND p.timestamp >= '2022-01-01'
-	AND p.timestamp <= '2022-01-31'
-GROUP BY p.tag_operator_id)
 SELECT
-	'NAO' AS tollOpID,
-	DATE_FORMAT(NOW(),'%Y-%m-%d %H:%i') AS requestTimestamp,
-	"2022-01-01" AS periodFrom,
-	"2022-01-31" AS periodTo,
-    JSON_ARRAYAGG(
-        JSON_OBJECT(
-            'visitingOpID', visitingOpID,
-            'nPasses', nPasses,
-			'passesCost', passesCost
-        )
-    ) AS VOpList
-FROM CostsData;
+	debtor AS visitingOpID,
+	(SELECT
+		COUNT(1)
+	FROM toll_passes p
+	JOIN toll_stations s
+	ON p.toll_id = s.id
+	WHERE s.op_id = 'NAO'
+		AND p.tag_operator_id != s.op_id
+		AND p.tag_operator_id = debtor
+		AND p.timestamp >= '2022-01-01'
+		AND p.timestamp <= '2022-01-31'
+	) AS nPasses,
+	ROUND(SUM(amount), 1) AS passesCost
+FROM debts
+WHERE creditor = 'NAO'
+	AND date_created >= '2022-01-01'
+	AND date_created <= '2022-01-31'
+	AND settled = 0
+	AND verified = 0
+GROUP BY debtor;
+
 
 
 
 # --------------------------------------------------------------
-# REST API FUNCTIONALITY ENDPOINTS QUERIES FOR MANGE DEBTS PAGE
+# REST API FUNCTIONALITY ENDPOINTS QUERIES FOR MANAGE DEBTS PAGE
 # --------------------------------------------------------------
 
 
@@ -166,4 +169,20 @@ ON op.id = db.creditor
 WHERE db.debtor = 'NAO'
 	AND db.settled = 0
 	AND db.verified = 0
-GROUP BY (op.name);
+GROUP BY op.name;
+
+
+/*
+ * Settled but not yet verified
+ */
+
+SELECT
+	op.name AS debtorName,
+	ROUND(SUM(db.amount), 1) AS totalSettled
+FROM operators op
+JOIN debts db
+ON op.id = db.debtor
+WHERE db.creditor = 'NAO'
+	AND db.settled = 1
+	AND db.verified = 0
+GROUP BY op.name;
