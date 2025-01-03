@@ -162,13 +162,14 @@ GROUP BY debtor;
 
 SELECT
 	op.name AS creditorName,
-	ROUND(SUM(db.amount), 1) AS totalOwed
+	ROUND(COALESCE(SUM(db.amount), 0), 1) AS totalOwed
 FROM operators op
-JOIN debts db
-ON op.id = db.creditor
-WHERE db.debtor = 'NAO'
+LEFT JOIN debts db
+	ON op.id = db.creditor
+	AND db.debtor = 'NAO'
 	AND db.settled = 0
 	AND db.verified = 0
+WHERE op.id != 'NAO'
 GROUP BY op.name;
 
 
@@ -178,11 +179,13 @@ GROUP BY op.name;
 
 SELECT
 	op.name AS debtorName,
-	ROUND(SUM(db.amount), 1) AS totalSettled
+	ROUND(COALESCE(SUM(db.amount), 0), 1) AS totalSettled
 FROM operators op
-JOIN debts db
-ON op.id = db.debtor
-WHERE db.creditor = 'NAO'
+LEFT JOIN debts db
+	ON op.id = db.debtor
+	AND db.creditor = 'NAO'
 	AND db.settled = 1
 	AND db.verified = 0
+WHERE op.id != 'NAO'
 GROUP BY op.name;
+
