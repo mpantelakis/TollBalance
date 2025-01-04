@@ -191,3 +191,9 @@ LEFT JOIN debts db
 WHERE op.id != 'NAO'
 GROUP BY op.id;
 
+
+/*
+ * View Debt History
+ */
+
+CALL create_months('NAO', 'EG', '2022-01-01', CURDATE());
