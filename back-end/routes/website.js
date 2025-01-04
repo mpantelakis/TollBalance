@@ -5,7 +5,8 @@ const {
     NotVerified, 
     TotalNotVerified,
     SettleDebt,
-    VerifyPayment
+    VerifyPayment,
+    HistoryDebt
 } = require("../controllers/websiteControllers");
 const authenticateUser = require("../middleware/userAuthentication");
 
@@ -17,5 +18,6 @@ websiteRouter.get("/notverified/:id", authenticateUser, NotVerified);
 websiteRouter.get("/totalnotverified/:id", authenticateUser, TotalNotVerified);
 websiteRouter.post("/settledebt/:debtorId/:creditorId", authenticateUser, SettleDebt);
 websiteRouter.post("/verifypayment/:creditorId/:debtorId", authenticateUser, VerifyPayment);
+websiteRouter.get("/historydebt/:creditorId/:debtorId", authenticateUser, HistoryDebt);
 
 module.exports = websiteRouter;

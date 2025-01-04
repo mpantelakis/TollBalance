@@ -240,6 +240,34 @@ const VerifyPayment = asyncHandler(async (req, res) => {
   });
 });
 
+const HistoryDebt = asyncHandler(async (req, res) => {
+  const { creditorId, debtorId } = req.params; // Creditor is the signed-in operator
+  const { format = "json" } = req.query;
+
+  // Validate input
+  if (!debtorId) {
+    throw new CustomError.BadRequest("Debtor ID is required.");
+  }
+  if (!creditorId) {
+    throw new CustomError.BadRequest("Creditor ID is required.");
+  }
+
+  const [rows] = await pool.query(
+    `CALL create_months(?, ?, DATE_SUB(CURDATE(), INTERVAL 12 MONTH), CURDATE());`,
+    [creditorId, debtorId]
+  );
+
+  // If CSV format is requested
+  if (format === "csv") {
+    const csv = json2csv(rows);
+    res.header("Content-Type", "text/csv");
+    res.attachment("history_debt.csv");
+    return res.send(csv);
+  }
+
+  // Return the results from the stored procedure
+  res.json(rows);
+});
 
 
-module.exports = { NotSettled, TotalNotSettled, NotVerified, TotalNotVerified, SettleDebt, VerifyPayment };
+module.exports = { NotSettled, TotalNotSettled, NotVerified, TotalNotVerified, SettleDebt, VerifyPayment, HistoryDebt };

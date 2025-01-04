@@ -173,6 +173,16 @@ LEFT JOIN debts db
 WHERE op.id != 'NAO'
 GROUP BY op.id;
 
+/*
+ * Total Debts 
+ */
+
+SELECT
+	ROUND(SUM(db.amount), 1) AS totalOwed
+FROM debts db
+WHERE db.debtor = 'NAO'
+	AND db.settled = 0
+	AND db.verified = 0;
 
 /*
  * Settled but not yet verified
@@ -191,9 +201,35 @@ LEFT JOIN debts db
 WHERE op.id != 'NAO'
 GROUP BY op.id;
 
-
 /*
- * View Debt History
+ * Total settled but not yet verified
  */
 
-CALL create_months('NAO', 'EG', '2022-01-01', CURDATE());
+SELECT
+	ROUND(SUM(db.amount), 1) AS totalSettled
+FROM debts db
+WHERE db.creditor = 'NAO'
+	AND db.settled = 1
+	AND db.verified = 0;
+
+/*
+ * Update the database to mark the debts as settled
+ */
+
+UPDATE debts
+    SET settled = 1
+    WHERE debtor = 'NAO' AND creditor = 'EG' AND settled = 0 AND verified = 0;
+
+/*
+ * Update the database to mark the debts as verified
+ */
+
+UPDATE debts
+    SET verified = 1
+    WHERE debtor = 'NAO' AND creditor = 'EG' AND settled = 1 AND verified = 0;
+
+/*
+ * View Debt History for the last 12 months
+ */
+
+CALL create_months('NAO', 'EG', DATE_SUB(CURDATE(), INTERVAL 12 MONTH), CURDATE());
