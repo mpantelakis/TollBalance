@@ -4,17 +4,18 @@ const {
     TotalNotSettled,
     NotVerified, 
     TotalNotVerified,
-    SettleDebt
+    SettleDebt,
+    VerifyPayment
 } = require("../controllers/websiteControllers");
 const authenticateUser = require("../middleware/userAuthentication");
 
 const websiteRouter = Router();
 
-websiteRouter.get("/notsettled", authenticateUser, NotSettled);
-websiteRouter.get("/totalnotsettled", authenticateUser, TotalNotSettled);
-websiteRouter.get("/notverified", authenticateUser, NotVerified);
-websiteRouter.get("/totalnotverified", authenticateUser, TotalNotVerified);
-websiteRouter.post("/settledebt/:creditorId", authenticateUser, SettleDebt);
-//restRouter.get("/verify", authenticateUser, Verify);
+websiteRouter.get("/notsettled/:id", authenticateUser, NotSettled);
+websiteRouter.get("/totalnotsettled/:id", authenticateUser, TotalNotSettled);
+websiteRouter.get("/notverified/:id", authenticateUser, NotVerified);
+websiteRouter.get("/totalnotverified/:id", authenticateUser, TotalNotVerified);
+websiteRouter.post("/settledebt/:debtorId/:creditorId", authenticateUser, SettleDebt);
+websiteRouter.post("/verifypayment/:creditorId/:debtorId", authenticateUser, VerifyPayment);
 
 module.exports = websiteRouter;

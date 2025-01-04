@@ -1,25 +1,11 @@
 const pool = require("../db");
 const json2csv = require("json2csv").parse;
-const jwt = require("jsonwebtoken");
 const CustomError = require("../errors/customErrors");
 const asyncHandler = require("express-async-handler");
 
 const NotSettled = asyncHandler(async (req, res) => {
-  const token = req.headers["x-observatory-auth"]; // Get the token from the request header
 
-  if (!token) {
-    throw new CustomError.NotAuthorized("No token provided");
-  }
-
-  let decoded;
-  try {
-    // Decode the token to extract operatorID
-    decoded = jwt.verify(token, process.env.JWT_SECRET);
-  } catch (err) {
-    throw new CustomError.NotAuthorized("Invalid or expired token");
-  }
-
-  const { id } = decoded; // Extract operatorID from decoded payload
+  const { id } = req.params; // Extract signed-in operatorID 
   const { format = "json" } = req.query; // Default to 'json' if format is not provided
 
   // Validate operatorID (debtor)
@@ -30,20 +16,23 @@ const NotSettled = asyncHandler(async (req, res) => {
   const query = `
     SELECT
       op.id AS creditorId,
-	    op.name AS creditorName,
-	    ROUND(SUM(db.amount), 1) AS totalOwed
+      op.name AS creditorName,
+      ROUND(COALESCE(SUM(db.amount), 0), 1) AS totalOwed
     FROM operators op
-    JOIN debts db
-    ON op.id = db.creditor
-    WHERE db.debtor = ?
-	    AND db.settled = 0
-	    AND db.verified = 0
-    GROUP BY (op.id);`;
+    LEFT JOIN debts db
+      ON op.id = db.creditor
+      AND db.debtor = ?
+      AND db.settled = 0
+      AND db.verified = 0
+    WHERE op.id != ?
+    GROUP BY op.id;
 
-  const [rows] = await pool.execute(query, [id]);
+`;
+
+  const [rows] = await pool.execute(query, [id, id]);
 
   if (rows.length === 0) {
-    throw new CustomError.NoContent("No outstanding debts found for the specified operator.");
+    throw new CustomError.NoContent("No unsettled debts found for the specified operator.");
   }
 
   if (format === "csv") {
@@ -57,21 +46,8 @@ const NotSettled = asyncHandler(async (req, res) => {
 });
 
 const TotalNotSettled = asyncHandler(async (req, res) => {
-  const token = req.headers["x-observatory-auth"]; // Get the token from the request header
 
-  if (!token) {
-    throw new CustomError.NotAuthorized("No token provided");
-  }
-
-  let decoded;
-  try {
-    // Decode the token to extract operatorID (debtor)
-    decoded = jwt.verify(token, process.env.JWT_SECRET);
-  } catch (err) {
-    throw new CustomError.NotAuthorized("Invalid or expired token");
-  }
-
-  const { id } = decoded; // Extract operatorID (debtor) from decoded payload
+  const { id } = req.params; // Extract signed-in operatorID (debtor) 
   const { format = "json" } = req.query; // Default to 'json' if format is not provided
 
   // Validate operatorID (debtor)
@@ -90,7 +66,7 @@ const TotalNotSettled = asyncHandler(async (req, res) => {
   const [rows] = await pool.execute(query, [id]);
 
   if (rows.length === 0) {
-    throw new CustomError.NoContent("No outstanding debts found for the specified operator.");
+    throw new CustomError.NoContent("No unsettled debts found for the specified operator.");
   }
 
   if (format === "csv") {
@@ -105,20 +81,8 @@ const TotalNotSettled = asyncHandler(async (req, res) => {
 
 
 const NotVerified = asyncHandler(async (req, res) => {
-    const token = req.headers["x-observatory-auth"];
   
-    if (!token) {
-      throw new CustomError.NotAuthorized("No token provided");
-    }
-  
-    let decoded;
-    try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET);
-    } catch (err) {
-      throw new CustomError.NotAuthorized("Invalid or expired token");
-    }
-  
-    const { id } = decoded;
+    const { id } = req.params;  // Extract signed-in operatorID (creditor)
     const { format = "json" } = req.query;
   
     if (!id) {
@@ -129,16 +93,17 @@ const NotVerified = asyncHandler(async (req, res) => {
       SELECT
         op.id AS debtorId,
         op.name AS debtorName,
-        ROUND(SUM(db.amount), 1) AS totalSettled
+        ROUND(COALESCE(SUM(db.amount), 0), 1) AS totalSettled
       FROM operators op
-      JOIN debts db
-      ON op.id = db.debtor
-      WHERE db.creditor = ?
+      LEFT JOIN debts db
+        ON op.id = db.debtor
+        AND db.creditor = ?
         AND db.settled = 1
         AND db.verified = 0
-      GROUP BY (op.id);`;
+      WHERE op.id != ?
+      GROUP BY op.id;`;
   
-    const [rows] = await pool.execute(query, [id]);
+    const [rows] = await pool.execute(query, [id, id]);
   
     if (rows.length === 0) {
       throw new CustomError.NoContent("No unverified debts found for the specified operator.");
@@ -155,21 +120,8 @@ const NotVerified = asyncHandler(async (req, res) => {
   });
 
   const TotalNotVerified = asyncHandler(async (req, res) => {
-    const token = req.headers["x-observatory-auth"]; // Get the token from the request header
   
-    if (!token) {
-      throw new CustomError.NotAuthorized("No token provided");
-    }
-  
-    let decoded;
-    try {
-      // Decode the token to extract operatorID (debtor)
-      decoded = jwt.verify(token, process.env.JWT_SECRET);
-    } catch (err) {
-      throw new CustomError.NotAuthorized("Invalid or expired token");
-    }
-  
-    const { id } = decoded; // Extract operatorID (debtor) from decoded payload
+    const { id } = req.params; // Extract signed-in operatorID (creditor) 
     const { format = "json" } = req.query; // Default to 'json' if format is not provided
   
     // Validate operatorID (debtor)
@@ -179,7 +131,7 @@ const NotVerified = asyncHandler(async (req, res) => {
   
     const query = `
       SELECT
-        ROUND(SUM(db.amount), 1) AS totalOwed
+        ROUND(SUM(db.amount), 1) AS totalSettled
       FROM debts db
       WHERE db.creditor = ?
         AND db.settled = 1
@@ -187,43 +139,31 @@ const NotVerified = asyncHandler(async (req, res) => {
   
     const [rows] = await pool.execute(query, [id]);
   
-    if (rows.length === 0 || rows[0].totalOwed === null) {
-      throw new CustomError.NoContent("No unsettled debts found for the specified operator.");
+    if (rows.length === 0) {
+      throw new CustomError.NoContent("No unverified debts found for the specified operator.");
     }
   
-    const totalOwed = rows[0].totalOwed;
-  
     if (format === "csv") {
-      // If CSV is requested, return total amount as a single row
-      const csv = json2csv([{ totalOwed }]);
+      const csv = json2csv(rows);
       res.header("Content-Type", "text/csv");
       res.attachment("total_not_verified.csv");
       return res.send(csv);
     }
   
-    res.json({ totalOwed });
+    res.json(rows);
   });
   
 
 const SettleDebt = asyncHandler(async (req, res) => {
-  const token = req.headers["x-observatory-auth"]; // Get the token from headers
 
-  if (!token) {
-    throw new CustomError.NotAuthorized("No token provided");
-  }
-
-  let decoded;
-  try {
-    decoded = jwt.verify(token, process.env.JWT_SECRET); // Decode token to get the user ID
-  } catch (err) {
-    throw new CustomError.NotAuthorized("Invalid or expired token");
-  }
-
-  const { id: debtorId } = decoded; // Get the signed-in user's ID
-  const { creditorId } = req.params; // Get creditor ID from the URL
+  const { debtorId } = req.params; // Get the signed-in operator's ID (debtor) and the creditor ID 
+  const { creditorId } = req.params;
   const { format = "json" } = req.query;
 
   // Validate input
+  if (!debtorId) {
+    throw new CustomError.BadRequest("Debtor ID is required.");
+  }
   if (!creditorId) {
     throw new CustomError.BadRequest("Creditor ID is required.");
   }
@@ -235,23 +175,71 @@ const SettleDebt = asyncHandler(async (req, res) => {
     WHERE debtor = ? AND creditor = ? AND settled = 0 AND verified = 0;
   `;
 
-  const [result] = await pool.execute(query, [debtorId, creditorId]);
+  const [rows] = await pool.execute(query, [debtorId, creditorId]);
 
   // Check if any rows were updated
-  if (result.affectedRows === 0) {
+  if (rows.affectedRows === 0) {
     throw new CustomError.NoContent("No unsettled debts found for the specified creditor.");
   }
 
   if (format === "csv") {
     const csv = json2csv(rows);
     res.header("Content-Type", "text/csv");
-    res.attachment("settledebt.csv");
+    res.attachment("settle_debt.csv");
     return res.send(csv);
   }
 
-  res.json(result);
+  // Respond with the number of rows updated
+  res.json({
+    status: "success",
+    message: `${rows.affectedRows} debt settled successfully.`,
+  });
 
 });
 
+const VerifyPayment = asyncHandler(async (req, res) => {
+  
+  const { creditorId } = req.params; // Get the signed-in operator's ID (creditor)
+  const { debtorId } = req.params; // Get the debtor ID 
+  const { format = "json" } = req.query;
 
-module.exports = { NotSettled, TotalNotSettled, NotVerified, TotalNotVerified, SettleDebt };
+  // Validate input
+  if (!debtorId) {
+    throw new CustomError.BadRequest("Debtor ID is required.");
+  }
+  if (!creditorId) {
+    throw new CustomError.BadRequest("Creditor ID is required.");
+  }
+
+  // Update the database to mark the debts as verified
+  const query = `
+    UPDATE debts
+    SET verified = 1
+    WHERE debtor = ? AND creditor = ? AND settled = 1 AND verified = 0;
+  `;
+
+  const [rows] = await pool.execute(query, [debtorId, creditorId]);
+
+  // Check if any rows were updated
+  if (rows.affectedRows === 0) {
+    throw new CustomError.NoContent("No payments to verify for the specified debtor.");
+  }
+
+  // If CSV format is requested
+  if (format === "csv") {
+    const csv = json2csv(rows);
+    res.header("Content-Type", "text/csv");
+    res.attachment("verify_payment.csv");
+    return res.send(csv);
+  }
+
+  // Respond with the number of rows updated
+  res.json({
+    status: "success",
+    message: `${rows.affectedRows} payments verified successfully.`,
+  });
+});
+
+
+
+module.exports = { NotSettled, TotalNotSettled, NotVerified, TotalNotVerified, SettleDebt, VerifyPayment };
