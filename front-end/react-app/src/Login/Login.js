@@ -1,98 +1,94 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './Login.css'; 
 import { FaUser, FaLock } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
+
 
 const Login = ({ onLogin }) => {
-  // Define state variables for username, password, and error message
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const navigate = useNavigate();
 
-   // Hook for navigation
-   const navigate = useNavigate();
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      try {
+        const decodedToken = jwtDecode(token);
+        if (decodedToken.exp * 1000 > Date.now()) {
+          navigate('/homepage', { replace: true }); // Redirect if already authenticated
+        }
+      } catch (error) {
+        console.error('Invalid token:', error);
+      }
+    }
+  }, [navigate]);
 
-  // Handle the form submit event
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    // Reset error message
     setErrorMessage('');
+    setSuccessMessage('');
 
-    // Logging username and password values
-    console.log(username); 
-    console.log(password);  
-    
     try {
-      console.log("I entered try");
-      // API call to the backend for login
       const response = await fetch('http://localhost:9115/api/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username,
-          password,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
       });
 
-      // Check if the response was successful
       if (response.ok) {
-
         const data = await response.json();
         const token = data.token;
 
-        // Store the token in localStorage
+        // Decode the token
+        const decodedToken = jwtDecode(token);
+        console.log('Decoded Token:', decodedToken);
+
+        // Store the token and user details in localStorage
         localStorage.setItem('authToken', token);
+        localStorage.setItem('userDetails', JSON.stringify(decodedToken));
 
-        console.log('Login is successful');
-        // Call onLogin to update authentication state in App.js
-        onLogin(); // Inform the parent component (App.js) that the user is logged in
-
-        // Redirect to the /welcome page
-        navigate('/welcome');
-
+        setSuccessMessage('Login successful!');
+        onLogin(); // Notify parent component
+        navigate('/homepage', { replace: true }); // Redirect and replace history
       } else {
-        console.log("first error");
         const errorData = await response.json();
         setErrorMessage(errorData.message || 'Login failed. Please try again.');
       }
     } catch (error) {
-      console.log("second error");
       setErrorMessage('An error occurred. Please try again.');
     }
   };
 
   return (
     <div className='wrapper'>
-      <form onSubmit={handleSubmit}>  {/* Corrected to use onSubmit */}
+      <form onSubmit={handleSubmit}>
         <h1>Login</h1>
-
         <div className="input-box">
           <input
             type="text"
             placeholder="Username"
             required
-            value={username}  // Bind input value to username state
-            onChange={(e) => setUsername(e.target.value)}  // Update state on change
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
           />
           <FaUser className='icon'/>
         </div>
-
         <div className="input-box">
           <input
             type="password"
             placeholder="Password"
             required
-            value={password}  // Bind input value to password state
-            onChange={(e) => setPassword(e.target.value)}  // Update state on change
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
           />
           <FaLock className='icon'/>
         </div>
-
-        <button type="submit">Login</button> {/* Submit button triggers handleSubmit */}
-        
+        <button type="submit">Login</button>
+        {successMessage && <div className={styles.success}>{successMessage}</div>}
         {errorMessage && <div className={styles.error}>{errorMessage}</div>}
       </form>
     </div>
@@ -100,4 +96,3 @@ const Login = ({ onLogin }) => {
 };
 
 export default Login;
-

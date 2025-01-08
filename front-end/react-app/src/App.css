@@ -28,6 +28,18 @@
   color: #61dafb;
 }
 
+.main-container {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch; /* Stretch children to fill container height */
+  gap: 20px; 
+}
+
+
+.page-container {
+  position: relative; /* Add position relative to the container */
+}
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);

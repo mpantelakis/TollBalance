@@ -1,0 +1,53 @@
+/* HomePage/HomePage.css */
+
+.homepage-container { /* New container for overall layout */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    gap: 20px; /* Space between elements */
+  }
+  
+  .buttons-container {
+    display: flex;
+    gap: 30px; /* Space between buttons */
+    backdrop-filter: blur(5px); 
+    /* padding: 30px;  */
+    border-radius: 10px; 
+    background-color: rgba(255, 255, 255, 0.2); /* Add a semi-transparent background */
+  }
+  
+  .button-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+  }
+  
+  .path-button {
+    margin-right: 0; /* Remove margin */
+    padding: 20px 30px; /* Adjusted padding */
+    font-size: 55px ;  /* Adjusted font size */
+    font-weight: bold;
+    color: #fff;
+    background-color: rgba(250, 250, 250, .5);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    text-align: center;
+    width: 700px; /* Adjusted width */
+    height: 600px; /* Adjusted height */
+  }
+  
+  .path-button:hover {
+    background-color: #003e0d;
+  }
+  
+  .path-button-description {
+    font-size: 22px; /* Adjusted font size */
+    color: #555555;
+    text-align: center; /* Center the description text */
+    margin-top: 30px; /* Adjusted margin */
+  }

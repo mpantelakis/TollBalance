@@ -1,0 +1,19 @@
+/* Logout/Logout.css */
+
+#logout-button {  /* Use the correct ID from your Logout component */
+    position: absolute;
+    top: 10px; 
+    right: 10px; 
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 16px;
+    z-index: 1000; 
+  }
+  
+  #logout-button:hover {
+    background-color: #ff1a1a;
+  }
