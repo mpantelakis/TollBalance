@@ -125,13 +125,13 @@ const NotVerified = () => {
     <div className="not-settled-container"> {/* Reusing the class */}
       <div className="debt-wrapper">
         <h1 className="debt-title">Unverified Payments</h1>
-        <h2 className="total-debt">Total Unverified Payments: {totalNotVerified} €</h2>
+        <h2 className="total-debt">Total Amount: {totalNotVerified} €</h2>
         <div className="debt-list">
           {payments.map((payment, index) => (
             <div key={index} className="debt-card">
               <div className="debt-header">
                 <div className="debt-info">
-                  <strong>{payment.debtorName}</strong> initiate a payment of <strong>{payment.totalSettled}€</strong>
+                  <strong>{payment.debtorName}</strong> initiated a payment of <strong>{payment.totalSettled}€</strong>
                 </div>
                 <div className="debt-actions">
                   <button 

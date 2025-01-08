@@ -40,6 +40,13 @@
   position: relative; /* Add position relative to the container */
 }
 
+.logout-container { /* Styles for the new container */
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1000; 
+}
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);

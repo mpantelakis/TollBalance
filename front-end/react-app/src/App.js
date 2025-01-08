@@ -49,17 +49,16 @@ function App() {
             path="/"
             element={<Login onLogin={handleLogin} />}
           />
-          <Route 
-            path="/homepage" 
+           <Route
+            path="/homepage"
             element={
-              // Apply conditional rendering here
               isAuthenticated ? (
-                <div className="page-container">
-                  {" "}
-                  {/* Add a container for each page */}
-                  <Logout /> {/* Show Logout on this route */}
+                <> 
+                  <div className="logout-container"> 
+                    <Logout /> 
+                  </div>
                   <Homepage />
-                </div>
+                </>
               ) : (
                 <Navigate to="/" replace />
               )
@@ -68,18 +67,18 @@ function App() {
 
           <Route
             path="/notsettled"
-            element={isAuthenticated ? (
-              <div className="page-container">
-              {" "}
-              {/* Add a container for each page */}
-              <Logout /> {/* Show Logout on this route */}
-              <div className="main-container">
-                {/* Add a container */}
-                <NotSettled onLogout={handleLogout} />
-                <NotVerified onLogout={handleLogout} />
-              </div>
-            </div>
-          ) : (
+            element={
+              isAuthenticated ? (
+                <>
+                  <div className="logout-container"> 
+                    <Logout /> 
+                  </div>
+                  <div className="main-container">
+                    <NotSettled onLogout={handleLogout} />
+                    <NotVerified onLogout={handleLogout} />
+                  </div>
+                </>
+              ) : (
             <Navigate to="/" />
           )}
         />

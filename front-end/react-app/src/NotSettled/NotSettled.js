@@ -186,7 +186,7 @@ const NotSettled = () => {
     <div className="not-settled-container">
       <div className="debt-wrapper">
         <h1 className="debt-title">Unsettled Debts</h1>
-        <h2 className="total-debt">Total Debts: {totalNotSettled} €</h2>
+        <h2 className="total-debt">Total Amount: {totalNotSettled} €</h2>
         <div className="debt-list">
           {debts.map((debt, index) => (
             <div key={index} className="debt-card">
