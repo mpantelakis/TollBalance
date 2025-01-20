@@ -173,6 +173,7 @@ LEFT JOIN debts db
 WHERE op.id != 'NAO'
 GROUP BY op.id;
 
+
 /*
  * Total Debts 
  */
@@ -183,6 +184,7 @@ FROM debts db
 WHERE db.debtor = 'NAO'
 	AND db.settled = 0
 	AND db.verified = 0;
+
 
 /*
  * Settled but not yet verified
@@ -201,6 +203,7 @@ LEFT JOIN debts db
 WHERE op.id != 'NAO'
 GROUP BY op.id;
 
+
 /*
  * Total settled but not yet verified
  */
@@ -212,6 +215,7 @@ WHERE db.creditor = 'NAO'
 	AND db.settled = 1
 	AND db.verified = 0;
 
+
 /*
  * Update the database to mark the debts as settled
  */
@@ -219,6 +223,7 @@ WHERE db.creditor = 'NAO'
 UPDATE debts
     SET settled = 1
     WHERE debtor = 'NAO' AND creditor = 'EG' AND settled = 0 AND verified = 0;
+
 
 /*
  * Update the database to mark the debts as verified
@@ -228,8 +233,65 @@ UPDATE debts
     SET verified = 1
     WHERE debtor = 'NAO' AND creditor = 'EG' AND settled = 1 AND verified = 0;
 
+
 /*
  * View Debt History for the last 12 months
  */
 
-CALL create_months('NAO', 'EG', DATE_SUB(CURDATE(), INTERVAL 12 MONTH), CURDATE());
+SELECT 
+	m.month AS month,
+	ROUND(COALESCE(SUM(d.amount), 0), 1) AS totalDebts
+FROM months m
+LEFT JOIN debts d
+ON DATE_FORMAT(d.date_created, '%Y-%m') = m.month
+	AND d.creditor = 'NAO'
+	AND d.debtor = 'EG'
+WHERE m.month > DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 12 MONTH), '%Y-%m')
+GROUP BY m.month
+ORDER BY m.month DESC;
+
+
+
+
+# --------------------------------------------------------------
+# REST API FUNCTIONALITY ENDPOINTS QUERIES FOR STATISTICS PAGE
+# --------------------------------------------------------------
+
+
+/*
+ * Monthly passes through a company's toll network
+ */
+
+SELECT
+	m.month,
+	COALESCE(COUNT(s.op_id), 0) AS totalPasses
+FROM months m
+LEFT JOIN toll_passes p
+ON DATE_FORMAT(p.timestamp, '%Y-%m') = m.month
+LEFT JOIN toll_stations s
+ON p.toll_id = s.id
+	AND s.op_id = 'NAO'
+GROUP BY m.month
+	HAVING m.month >= DATE_FORMAT('2022-03-01', '%Y-%m')
+AND m.month <= DATE_FORMAT('2023-03-01', '%Y-%m')
+ORDER BY m.month DESC;
+
+
+/*
+ * Monthly passes through a company's toll stations on a road
+ */
+
+SELECT
+	m.month,
+	COALESCE(COUNT(s.op_id), 0) AS totalPasses
+FROM months m
+LEFT JOIN toll_passes p
+ON DATE_FORMAT(p.timestamp, '%Y-%m') = m.month
+LEFT JOIN toll_stations s
+ON p.toll_id = s.id
+	AND s.op_id = 'NAO'
+	AND s.road_id = 13
+GROUP BY m.month
+	HAVING m.month >= DATE_FORMAT('2022-03-01', '%Y-%m')
+AND m.month <= DATE_FORMAT('2023-03-01', '%Y-%m')
+ORDER BY m.month DESC;
