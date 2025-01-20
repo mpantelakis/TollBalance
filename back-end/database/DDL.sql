@@ -10,6 +10,7 @@
 DROP DATABASE IF EXISTS toll_balance;
 CREATE DATABASE toll_balance;
 USE toll_balance;
+SET GLOBAL event_scheduler = ON;
 
 
 /*
@@ -96,6 +97,10 @@ CREATE TABLE admin (
     PRIMARY KEY (username,password)
 );
 
+CREATE TABLE months (
+	month CHAR(7) PRIMARY KEY
+);
+
 
 /*
  * Create the triggers
@@ -146,34 +151,44 @@ DELIMITER ;
 
 
 /*
+ * Create the events
+ */
+DELIMITER //
+
+CREATE EVENT daily_month_update
+ON SCHEDULE EVERY 1 DAY
+DO
+BEGIN
+	DECLARE new_month VARCHAR(7);
+	SET new_month = DATE_FORMAT(CURDATE(), '%Y-%m');
+
+	IF NOT EXISTS (
+		SELECT 1
+		FROM months
+		WHERE month = new_month
+	) THEN
+		INSERT INTO months (month) VALUES (new_month);
+	END IF;
+END //
+
+DELIMITER ;
+
+
+/*
  * Create the procedures
  */
 
 DELIMITER //
 
-CREATE PROCEDURE create_months(creditor_id VARCHAR(4), debtor_id VARCHAR(4), start_date DATE, end_date DATE)
+CREATE PROCEDURE populate_months()
 BEGIN
-	CREATE TEMPORARY TABLE IF NOT EXISTS months (
-		month CHAR(7)
-	);
+	DECLARE start_date DATE;
+	SET start_date = '2022-01-01';
 
-	WHILE start_date <= end_date DO
+	WHILE start_date <= CURDATE() DO
 		INSERT INTO months (month) VALUES (DATE_FORMAT(start_date, '%Y-%m'));
 		SET start_date = DATE_ADD(start_date, INTERVAL 1 MONTH);
 	END WHILE;
-
-	SELECT 
-		m.month AS month,
-		ROUND(COALESCE(SUM(d.amount), 0), 1) AS totalDebts
-	FROM months m
-	LEFT JOIN debts d
-	ON DATE_FORMAT(d.date_created, '%Y-%m') = m.month
-		AND d.creditor = creditor_id
-		AND d.debtor = debtor_id
-	GROUP BY m.month
-	ORDER BY m.month DESC;
-
-	DROP TEMPORARY TABLE months;
 END //
 
 DELIMITER ;
