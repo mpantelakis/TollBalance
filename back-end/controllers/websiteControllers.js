@@ -253,17 +253,18 @@ const HistoryDebt = asyncHandler(async (req, res) => {
   }
 
   const [rows] = await pool.query(
-    `SELECT 
-	m.month AS month,
-	ROUND(COALESCE(SUM(d.amount), 0), 1) AS totalDebts
-FROM months m
-LEFT JOIN debts d
-ON DATE_FORMAT(d.date_created, '%Y-%m') = m.month
-AND d.creditor = 'NAO'
-AND d.debtor = 'EG'
-WHERE m.month > DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 12 MONTH), '%Y-%m')
-GROUP BY m.month
-ORDER BY m.month DESC;`,
+    `
+  SELECT 
+	  m.month AS month,
+	  ROUND(COALESCE(SUM(d.amount), 0), 1) AS totalDebts
+  FROM months m
+  LEFT JOIN debts d
+  ON DATE_FORMAT(d.date_created, '%Y-%m') = m.month
+    AND d.creditor = ?
+    AND d.debtor = ?
+  WHERE m.month > DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 12 MONTH), '%Y-%m')
+  GROUP BY m.month
+  ORDER BY m.month DESC;`,
     [creditorId, debtorId]
   );
 
@@ -293,33 +294,36 @@ const TrafficVariation = asyncHandler(async (req, res) => {
   const dateFormatRegex = /^\d{8}$/;
 
   // Validate 'date_from' parameter
-  if (!date_from || !dateFormatRegex.test(date_from)) {
+  if (!date_from) {
     throw new CustomError.BadRequest(
-      "Invalid 'date_from' parameter. It should be in YYYYMMDD format."
+      "Invalid 'date_from' parameter."
     );
   }
 
   // Validate 'date_to' parameter
-  if (!date_to || !dateFormatRegex.test(date_to)) {
+  if (!date_to) {
     throw new CustomError.BadRequest(
-      "Invalid 'date_to' parameter. It should be in YYYYMMDD format."
+      "Invalid 'date_to' parameter."
     );
   }
 
-  // Format the dates to YYYY-MM-DD for SQL compatibility
-  const formattedDateFrom = `${date_from.slice(0, 4)}-${date_from.slice(
-    4,
-    6
-  )}-${date_from.slice(6, 8)}`;
-  const formattedDateTo = `${date_to.slice(0, 4)}-${date_to.slice(
-    4,
-    6
-  )}-${date_to.slice(6, 8)}`;
-
   const query = `
+  SELECT
+    m.month,
+    COALESCE(COUNT(s.op_id), 0) AS totalPasses
+  FROM months m
+  LEFT JOIN toll_passes p
+  ON DATE_FORMAT(p.timestamp, '%Y-%m') = m.month
+  LEFT JOIN toll_stations s
+  ON p.toll_id = s.id
+    AND s.op_id = ?
+  GROUP BY m.month
+    HAVING m.month >= DATE_FORMAT(?, '%Y-%m')
+    AND m.month <= DATE_FORMAT(?, '%Y-%m')
+  ORDER BY m.month DESC;
     `;
 
-  const [rows] = await pool.execute(query, [id, formattedDateFrom, formattedDateTo]);
+  const [rows] = await pool.execute(query, [id, date_from, date_to]);
 
   if (rows.length === 0) {
     throw new CustomError.NoContent("No toll passes found for the specified operator.");
@@ -374,37 +378,38 @@ const TrafficVariationPerRoad = asyncHandler(async (req, res) => {
     throw new CustomError.BadRequest("Invalid operator ID.");
   }
 
-  // Regular expression to validate date format (YYYYMMDD)
-  const dateFormatRegex = /^\d{8}$/;
-
   // Validate 'date_from' parameter
-  if (!date_from || !dateFormatRegex.test(date_from)) {
+  if (!date_from) {
     throw new CustomError.BadRequest(
-      "Invalid 'date_from' parameter. It should be in YYYYMMDD format."
+      "Invalid 'date_from' parameter."
     );
   }
 
   // Validate 'date_to' parameter
-  if (!date_to || !dateFormatRegex.test(date_to)) {
+  if (!date_to) {
     throw new CustomError.BadRequest(
-      "Invalid 'date_to' parameter. It should be in YYYYMMDD format."
+      "Invalid 'date_to' parameter."
     );
   }
 
-  // Format the dates to YYYY-MM-DD for SQL compatibility
-  const formattedDateFrom = `${date_from.slice(0, 4)}-${date_from.slice(
-    4,
-    6
-  )}-${date_from.slice(6, 8)}`;
-  const formattedDateTo = `${date_to.slice(0, 4)}-${date_to.slice(
-    4,
-    6
-  )}-${date_to.slice(6, 8)}`;
-
   const query = `
+  SELECT
+	  m.month,
+	  COALESCE(COUNT(s.op_id), 0) AS totalPasses
+  FROM months m
+  LEFT JOIN toll_passes p
+  ON DATE_FORMAT(p.timestamp, '%Y-%m') = m.month
+  LEFT JOIN toll_stations s
+  ON p.toll_id = s.id
+    AND s.op_id = ?
+    AND s.road_id = ?
+  GROUP BY m.month
+    HAVING m.month >= DATE_FORMAT(?, '%Y-%m')
+  AND m.month <= DATE_FORMAT(?, '%Y-%m')
+  ORDER BY m.month DESC;
     `;
 
-  const [rows] = await pool.execute(query, [id, road, formattedDateFrom, formattedDateTo]);
+  const [rows] = await pool.execute(query, [id, road, date_from, date_to]);
 
   if (rows.length === 0) {
     throw new CustomError.NoContent("No toll passes found for the specified road.");
