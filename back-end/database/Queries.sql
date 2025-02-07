@@ -314,3 +314,23 @@ WHERE s.op_id = 'NAO'
 	AND p.timestamp <= '2023-03-31'
 GROUP BY r.name;
 
+
+/*
+ * Top 5 most popular toll booths
+ */
+
+SELECT
+	s.name AS tollBooth,
+	COUNT(p.id) AS totalPasses
+FROM toll_passes p
+JOIN toll_stations s
+ON p.toll_id = s.id
+WHERE s.op_id = 'NAO'
+GROUP BY p.toll_id
+ORDER BY totalPasses DESC
+LIMIT 5;
+	
+
+
+
+
