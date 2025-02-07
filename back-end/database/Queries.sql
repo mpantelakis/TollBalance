@@ -259,6 +259,15 @@ ORDER BY m.month DESC;
 
 
 /*
+ * Operators other than the logged in one
+ */
+
+SELECT *
+FROM operators
+WHERE id != 'NAO';
+
+
+/*
  * An Operator's Roads
  */
 
