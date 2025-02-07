@@ -185,7 +185,7 @@ BEGIN
 	DECLARE start_date DATE;
 	SET start_date = '2022-01-01';
 
-	WHILE start_date <= CURDATE() DO
+	WHILE start_date <= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) DO
 		INSERT INTO months (month) VALUES (DATE_FORMAT(start_date, '%Y-%m'));
 		SET start_date = DATE_ADD(start_date, INTERVAL 1 MONTH);
 	END WHILE;
