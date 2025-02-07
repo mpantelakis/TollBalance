@@ -241,7 +241,7 @@ const VerifyPayment = asyncHandler(async (req, res) => {
 });
 
 const HistoryDebt = asyncHandler(async (req, res) => {
-  const { creditorId, debtorId } = req.params; // Creditor is the signed-in operator
+  const { debtorId, creditorId } = req.params; // Debtor is the signed-in operator
   const { format = "json" } = req.query;
 
   // Validate input
@@ -289,9 +289,6 @@ const TrafficVariation = asyncHandler(async (req, res) => {
   if (!id) {
     throw new CustomError.BadRequest("Invalid operator ID.");
   }
-
-  // Regular expression to validate date format (YYYYMMDD)
-  const dateFormatRegex = /^\d{8}$/;
 
   // Validate 'date_from' parameter
   if (!date_from) {
@@ -350,6 +347,13 @@ const RoadsPerOperator = asyncHandler(async (req, res) => {
   }
 
   const query = `
+  SELECT
+    r.* 
+  FROM toll_stations s
+  JOIN roads r
+  ON r.id = s.road_id
+  WHERE s.op_id = ?
+  GROUP BY r.id;
     `;
 
   const [rows] = await pool.execute(query, [id]);
@@ -435,37 +439,36 @@ const TrafficDistribution = asyncHandler(async (req, res) => {
     throw new CustomError.BadRequest("Invalid operator ID.");
   }
 
-  // Regular expression to validate date format (YYYYMMDD)
-  const dateFormatRegex = /^\d{8}$/;
-
   // Validate 'date_from' parameter
-  if (!date_from || !dateFormatRegex.test(date_from)) {
+  if (!date_from) {
     throw new CustomError.BadRequest(
-      "Invalid 'date_from' parameter. It should be in YYYYMMDD format."
+      "Invalid 'date_from' parameter."
     );
   }
 
   // Validate 'date_to' parameter
-  if (!date_to || !dateFormatRegex.test(date_to)) {
+  if (!date_to) {
     throw new CustomError.BadRequest(
-      "Invalid 'date_to' parameter. It should be in YYYYMMDD format."
+      "Invalid 'date_to' parameter."
     );
   }
 
-  // Format the dates to YYYY-MM-DD for SQL compatibility
-  const formattedDateFrom = `${date_from.slice(0, 4)}-${date_from.slice(
-    4,
-    6
-  )}-${date_from.slice(6, 8)}`;
-  const formattedDateTo = `${date_to.slice(0, 4)}-${date_to.slice(
-    4,
-    6
-  )}-${date_to.slice(6, 8)}`;
-
   const query = `
+  SELECT
+    r.name AS road,
+    COUNT(p.id) AS totalPasses
+  FROM toll_passes p
+  JOIN toll_stations s
+  ON p.toll_id = s.id
+  JOIN roads r
+  ON r.id = s.road_id
+  WHERE s.op_id = ? 
+    AND p.timestamp >= ?
+    AND p.timestamp <= ?
+  GROUP BY r.name;
     `;
 
-  const [rows] = await pool.execute(query, [id, formattedDateFrom, formattedDateTo]);
+  const [rows] = await pool.execute(query, [id, date_from, date_to]);
 
   if (rows.length === 0) {
     throw new CustomError.NoContent("No toll passes found for the specified operator.");
@@ -481,9 +484,9 @@ const TrafficDistribution = asyncHandler(async (req, res) => {
   res.json(rows);
 });
 
-const TollBooths = asyncHandler(async (req, res) => {
+const MostPopularTollBooths = asyncHandler(async (req, res) => {
   
-  const { id, date_from, date_to } = req.params; // Extract signed-in operatorID 
+  const { id } = req.params; // Extract signed-in operatorID 
   const { format = "json" } = req.query; // Default to 'json' if format is not provided
 
   // Validate operatorID 
@@ -491,37 +494,20 @@ const TollBooths = asyncHandler(async (req, res) => {
     throw new CustomError.BadRequest("Invalid operator ID.");
   }
 
-  // Regular expression to validate date format (YYYYMMDD)
-  const dateFormatRegex = /^\d{8}$/;
-
-  // Validate 'date_from' parameter
-  if (!date_from || !dateFormatRegex.test(date_from)) {
-    throw new CustomError.BadRequest(
-      "Invalid 'date_from' parameter. It should be in YYYYMMDD format."
-    );
-  }
-
-  // Validate 'date_to' parameter
-  if (!date_to || !dateFormatRegex.test(date_to)) {
-    throw new CustomError.BadRequest(
-      "Invalid 'date_to' parameter. It should be in YYYYMMDD format."
-    );
-  }
-
-  // Format the dates to YYYY-MM-DD for SQL compatibility
-  const formattedDateFrom = `${date_from.slice(0, 4)}-${date_from.slice(
-    4,
-    6
-  )}-${date_from.slice(6, 8)}`;
-  const formattedDateTo = `${date_to.slice(0, 4)}-${date_to.slice(
-    4,
-    6
-  )}-${date_to.slice(6, 8)}`;
-
   const query = `
+  SELECT
+    s.name AS tollBooth,
+    COUNT(p.id) AS totalPasses
+  FROM toll_passes p
+  JOIN toll_stations s
+  ON p.toll_id = s.id
+  WHERE s.op_id = ?
+  GROUP BY p.toll_id
+  ORDER BY totalPasses DESC
+  LIMIT 5;
     `;
 
-  const [rows] = await pool.execute(query, [id, formattedDateFrom, formattedDateTo]);
+  const [rows] = await pool.execute(query, [id]);
 
   if (rows.length === 0) {
     throw new CustomError.NoContent("No toll passes found for the specified operator.");
@@ -530,7 +516,37 @@ const TollBooths = asyncHandler(async (req, res) => {
   if (format === "csv") {
     const csv = json2csv(rows);
     res.header("Content-Type", "text/csv");
-    res.attachment("toll_booths.csv");
+    res.attachment("most_popular_toll_booths.csv");
+    return res.send(csv);
+  }
+
+  res.json(rows);
+});
+
+const OtherOperators = asyncHandler(async (req, res) => {
+  
+  const { id } = req.params; // Extract signed-in operatorID 
+  const { format = "json" } = req.query; // Default to 'json' if format is not provided
+
+  // Validate operatorID 
+  if (!id) {
+    throw new CustomError.BadRequest("Invalid operator ID.");
+  }
+
+  const query = `
+  SELECT * FROM operators WHERE id != ?;
+    `;
+
+  const [rows] = await pool.execute(query, [id]);
+
+  if (rows.length === 0) {
+    throw new CustomError.NoContent("No other operators found.");
+  }
+
+  if (format === "csv") {
+    const csv = json2csv(rows);
+    res.header("Content-Type", "text/csv");
+    res.attachment("other_operators.csv");
     return res.send(csv);
   }
 
@@ -539,45 +555,48 @@ const TollBooths = asyncHandler(async (req, res) => {
 
 const DebtHistoryChart = asyncHandler(async (req, res) => {
   
-  const { id, date_from, date_to } = req.params; // Extract signed-in operatorID 
+  const { debtorId, creditorId, date_from, date_to } = req.params; // Debtor is the signed-in operator
   const { format = "json" } = req.query; // Default to 'json' if format is not provided
 
   // Validate operatorID 
-  if (!id) {
+  if (!debtorId) {
     throw new CustomError.BadRequest("Invalid operator ID.");
   }
 
-  // Regular expression to validate date format (YYYYMMDD)
-  const dateFormatRegex = /^\d{8}$/;
+  if (!creditorId) {
+    throw new CustomError.BadRequest("Invalid creditor ID.");
+  }
 
   // Validate 'date_from' parameter
-  if (!date_from || !dateFormatRegex.test(date_from)) {
+  if (!date_from) {
     throw new CustomError.BadRequest(
-      "Invalid 'date_from' parameter. It should be in YYYYMMDD format."
+      "Invalid 'date_from' parameter."
     );
   }
 
   // Validate 'date_to' parameter
-  if (!date_to || !dateFormatRegex.test(date_to)) {
+  if (!date_to) {
     throw new CustomError.BadRequest(
-      "Invalid 'date_to' parameter. It should be in YYYYMMDD format."
+      "Invalid 'date_to' parameter."
     );
   }
 
-  // Format the dates to YYYY-MM-DD for SQL compatibility
-  const formattedDateFrom = `${date_from.slice(0, 4)}-${date_from.slice(
-    4,
-    6
-  )}-${date_from.slice(6, 8)}`;
-  const formattedDateTo = `${date_to.slice(0, 4)}-${date_to.slice(
-    4,
-    6
-  )}-${date_to.slice(6, 8)}`;
-
   const query = `
+  SELECT 
+    m.month AS month,
+    ROUND(COALESCE(SUM(d.amount), 0), 1) AS totalDebts
+  FROM months m
+  LEFT JOIN debts d
+  ON DATE_FORMAT(d.date_created, '%Y-%m') = m.month
+    AND d.creditor = ?
+    AND d.debtor = ?
+  WHERE m.month >= DATE_FORMAT(?, '%Y-%m')
+    AND m.month <= DATE_FORMAT(?, '%Y-%m')
+  GROUP BY m.month
+  ORDER BY m.month DESC;
     `;
 
-  const [rows] = await pool.execute(query, [id, formattedDateFrom, formattedDateTo]);
+  const [rows] = await pool.execute(query, [creditorId, debtorId, date_from, date_to]);
 
   if (rows.length === 0) {
     throw new CustomError.NoContent("No debt history found for the specified operator.");
@@ -595,45 +614,48 @@ const DebtHistoryChart = asyncHandler(async (req, res) => {
 
 const OwedAmountsChart = asyncHandler(async (req, res) => {
   
-  const { id, date_from, date_to } = req.params; // Extract signed-in operatorID 
+  const { creditorId, debtorId, date_from, date_to } = req.params; // Creditor is the signed-in operator 
   const { format = "json" } = req.query; // Default to 'json' if format is not provided
 
   // Validate operatorID 
-  if (!id) {
+  if (!debtorId) {
     throw new CustomError.BadRequest("Invalid operator ID.");
   }
 
-  // Regular expression to validate date format (YYYYMMDD)
-  const dateFormatRegex = /^\d{8}$/;
+  if (!creditorId) {
+    throw new CustomError.BadRequest("Invalid creditor ID.");
+  }
 
   // Validate 'date_from' parameter
-  if (!date_from || !dateFormatRegex.test(date_from)) {
+  if (!date_from) {
     throw new CustomError.BadRequest(
-      "Invalid 'date_from' parameter. It should be in YYYYMMDD format."
+      "Invalid 'date_from' parameter."
     );
   }
 
   // Validate 'date_to' parameter
-  if (!date_to || !dateFormatRegex.test(date_to)) {
+  if (!date_to) {
     throw new CustomError.BadRequest(
-      "Invalid 'date_to' parameter. It should be in YYYYMMDD format."
+      "Invalid 'date_to' parameter."
     );
   }
 
-  // Format the dates to YYYY-MM-DD for SQL compatibility
-  const formattedDateFrom = `${date_from.slice(0, 4)}-${date_from.slice(
-    4,
-    6
-  )}-${date_from.slice(6, 8)}`;
-  const formattedDateTo = `${date_to.slice(0, 4)}-${date_to.slice(
-    4,
-    6
-  )}-${date_to.slice(6, 8)}`;
-
   const query = `
+  SELECT 
+    m.month AS month,
+    ROUND(COALESCE(SUM(d.amount), 0), 1) AS totalDebts
+  FROM months m
+  LEFT JOIN debts d
+  ON DATE_FORMAT(d.date_created, '%Y-%m') = m.month
+    AND d.creditor = ?
+    AND d.debtor = ?
+  WHERE m.month >= DATE_FORMAT(?, '%Y-%m')
+    AND m.month <= DATE_FORMAT(?, '%Y-%m')
+  GROUP BY m.month
+  ORDER BY m.month DESC;
     `;
 
-  const [rows] = await pool.execute(query, [id, formattedDateFrom, formattedDateTo]);
+  const [rows] = await pool.execute(query, [creditorId, debtorId, date_from, date_to]);
 
   if (rows.length === 0) {
     throw new CustomError.NoContent("No owed amounts found for the specified operator.");
@@ -659,37 +681,36 @@ const RevenueDistribution = asyncHandler(async (req, res) => {
     throw new CustomError.BadRequest("Invalid operator ID.");
   }
 
-  // Regular expression to validate date format (YYYYMMDD)
-  const dateFormatRegex = /^\d{8}$/;
-
   // Validate 'date_from' parameter
-  if (!date_from || !dateFormatRegex.test(date_from)) {
+  if (!date_from) {
     throw new CustomError.BadRequest(
-      "Invalid 'date_from' parameter. It should be in YYYYMMDD format."
+      "Invalid 'date_from' parameter."
     );
   }
 
   // Validate 'date_to' parameter
-  if (!date_to || !dateFormatRegex.test(date_to)) {
+  if (!date_to) {
     throw new CustomError.BadRequest(
-      "Invalid 'date_to' parameter. It should be in YYYYMMDD format."
+      "Invalid 'date_to' parameter."
     );
   }
 
-  // Format the dates to YYYY-MM-DD for SQL compatibility
-  const formattedDateFrom = `${date_from.slice(0, 4)}-${date_from.slice(
-    4,
-    6
-  )}-${date_from.slice(6, 8)}`;
-  const formattedDateTo = `${date_to.slice(0, 4)}-${date_to.slice(
-    4,
-    6
-  )}-${date_to.slice(6, 8)}`;
-
   const query = `
+  SELECT
+    r.name AS road,
+    ROUND(SUM(p.charge), 1) AS totalRevenues
+  FROM toll_passes p
+  JOIN toll_stations s
+  ON p.toll_id = s.id
+  JOIN roads r
+  ON r.id = s.road_id
+  WHERE s.op_id = ? 
+    AND p.timestamp >= ?
+    AND p.timestamp <= ?
+  GROUP BY r.name;
     `;
 
-  const [rows] = await pool.execute(query, [id, formattedDateFrom, formattedDateTo]);
+  const [rows] = await pool.execute(query, [id, date_from, date_to]);
 
   if (rows.length === 0) {
     throw new CustomError.NoContent("No revenue found for the specified operator.");
@@ -718,7 +739,8 @@ module.exports =
   RoadsPerOperator, 
   TrafficVariationPerRoad,
   TrafficDistribution,
-  TollBooths,
+  MostPopularTollBooths,
+  OtherOperators,
   DebtHistoryChart,
   OwedAmountsChart,
   RevenueDistribution
