@@ -329,8 +329,23 @@ WHERE s.op_id = 'NAO'
 GROUP BY p.toll_id
 ORDER BY totalPasses DESC
 LIMIT 5;
-	
 
 
+/*
+ * Debt/Credit History
+ */	
+
+SELECT 
+	m.month AS month,
+	ROUND(COALESCE(SUM(d.amount), 0), 1) AS totalDebts
+FROM months m
+LEFT JOIN debts d
+ON DATE_FORMAT(d.date_created, '%Y-%m') = m.month
+	AND d.creditor = 'NAO'
+	AND d.debtor = 'EG'
+WHERE m.month >= DATE_FORMAT('2022-03-01', '%Y-%m')
+	AND m.month <= DATE_FORMAT('2023-03-01', '%Y-%m')
+GROUP BY m.month
+ORDER BY m.month DESC;
 
 
