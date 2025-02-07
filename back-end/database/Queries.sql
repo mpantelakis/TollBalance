@@ -278,7 +278,7 @@ ORDER BY m.month DESC;
 
 
 /*
- * Monthly passes through a company's toll stations on a road
+ * Monthly passes through a company's toll stations on a spesific road
  */
 
 SELECT
@@ -295,3 +295,22 @@ GROUP BY m.month
 	HAVING m.month >= DATE_FORMAT('2022-03-01', '%Y-%m')
 AND m.month <= DATE_FORMAT('2023-03-01', '%Y-%m')
 ORDER BY m.month DESC;
+
+
+/*
+ * Total traffic per road
+ */
+
+SELECT
+	r.name AS road,
+	COUNT(p.id) AS totalPasses
+FROM toll_passes p
+JOIN toll_stations s
+ON p.toll_id = s.id
+JOIN roads r
+ON r.id = s.road_id
+WHERE s.op_id = 'NAO' 
+	AND p.timestamp >= '2022-03-01'
+	AND p.timestamp <= '2023-03-31'
+GROUP BY r.name;
+
