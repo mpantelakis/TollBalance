@@ -124,7 +124,7 @@ const NotVerified = asyncHandler(async (req, res) => {
     const { id } = req.params; // Extract signed-in operatorID (creditor) 
     const { format = "json" } = req.query; // Default to 'json' if format is not provided
   
-    // Validate operatorID (debtor)
+    // Validate operatorID 
     if (!id) {
       throw new CustomError.BadRequest("Invalid operator ID.");
     }
@@ -192,7 +192,7 @@ const SettleDebt = asyncHandler(async (req, res) => {
   // Respond with the number of rows updated
   res.json({
     status: "success",
-    message: `${rows.affectedRows} debt settled successfully.`,
+    message: `Debt settled successfully.`,
   });
 
 });
@@ -236,7 +236,7 @@ const VerifyPayment = asyncHandler(async (req, res) => {
   // Respond with the number of rows updated
   res.json({
     status: "success",
-    message: `${rows.affectedRows} payments verified successfully.`,
+    message: `Payment verified successfully.`,
   });
 });
 
@@ -253,7 +253,17 @@ const HistoryDebt = asyncHandler(async (req, res) => {
   }
 
   const [rows] = await pool.query(
-    `CALL create_months(?, ?, DATE_SUB(CURDATE(), INTERVAL 12 MONTH), CURDATE());`,
+    `SELECT 
+	m.month AS month,
+	ROUND(COALESCE(SUM(d.amount), 0), 1) AS totalDebts
+FROM months m
+LEFT JOIN debts d
+ON DATE_FORMAT(d.date_created, '%Y-%m') = m.month
+AND d.creditor = 'NAO'
+AND d.debtor = 'EG'
+WHERE m.month > DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 12 MONTH), '%Y-%m')
+GROUP BY m.month
+ORDER BY m.month DESC;`,
     [creditorId, debtorId]
   );
 
@@ -269,5 +279,442 @@ const HistoryDebt = asyncHandler(async (req, res) => {
   res.json(rows);
 });
 
+const TrafficVariation = asyncHandler(async (req, res) => {
+  
+  const { id, date_from, date_to } = req.params; // Extract signed-in operatorID 
+  const { format = "json" } = req.query; // Default to 'json' if format is not provided
 
-module.exports = { NotSettled, TotalNotSettled, NotVerified, TotalNotVerified, SettleDebt, VerifyPayment, HistoryDebt };
+  // Validate operatorID 
+  if (!id) {
+    throw new CustomError.BadRequest("Invalid operator ID.");
+  }
+
+  // Regular expression to validate date format (YYYYMMDD)
+  const dateFormatRegex = /^\d{8}$/;
+
+  // Validate 'date_from' parameter
+  if (!date_from || !dateFormatRegex.test(date_from)) {
+    throw new CustomError.BadRequest(
+      "Invalid 'date_from' parameter. It should be in YYYYMMDD format."
+    );
+  }
+
+  // Validate 'date_to' parameter
+  if (!date_to || !dateFormatRegex.test(date_to)) {
+    throw new CustomError.BadRequest(
+      "Invalid 'date_to' parameter. It should be in YYYYMMDD format."
+    );
+  }
+
+  // Format the dates to YYYY-MM-DD for SQL compatibility
+  const formattedDateFrom = `${date_from.slice(0, 4)}-${date_from.slice(
+    4,
+    6
+  )}-${date_from.slice(6, 8)}`;
+  const formattedDateTo = `${date_to.slice(0, 4)}-${date_to.slice(
+    4,
+    6
+  )}-${date_to.slice(6, 8)}`;
+
+  const query = `
+    `;
+
+  const [rows] = await pool.execute(query, [id, formattedDateFrom, formattedDateTo]);
+
+  if (rows.length === 0) {
+    throw new CustomError.NoContent("No toll passes found for the specified operator.");
+  }
+
+  if (format === "csv") {
+    const csv = json2csv(rows);
+    res.header("Content-Type", "text/csv");
+    res.attachment("traffic_variation.csv");
+    return res.send(csv);
+  }
+
+  res.json(rows);
+});
+
+const RoadsPerOperator = asyncHandler(async (req, res) => {
+  
+  const { id } = req.params; // Extract signed-in operatorID 
+  const { format = "json" } = req.query; // Default to 'json' if format is not provided
+
+  // Validate operatorID 
+  if (!id) {
+    throw new CustomError.BadRequest("Invalid operator ID.");
+  }
+
+  const query = `
+    `;
+
+  const [rows] = await pool.execute(query, [id]);
+
+  if (rows.length === 0) {
+    throw new CustomError.NoContent("No roads found for the specified operator.");
+  }
+
+  if (format === "csv") {
+    const csv = json2csv(rows);
+    res.header("Content-Type", "text/csv");
+    res.attachment("roads_per_operator.csv");
+    return res.send(csv);
+  }
+
+  res.json(rows);
+});
+
+const TrafficVariationPerRoad = asyncHandler(async (req, res) => {
+  
+  const { id, road, date_from, date_to } = req.params; // Extract signed-in operatorID 
+  const { format = "json" } = req.query; // Default to 'json' if format is not provided
+
+  // Validate operatorID 
+  if (!id) {
+    throw new CustomError.BadRequest("Invalid operator ID.");
+  }
+
+  // Regular expression to validate date format (YYYYMMDD)
+  const dateFormatRegex = /^\d{8}$/;
+
+  // Validate 'date_from' parameter
+  if (!date_from || !dateFormatRegex.test(date_from)) {
+    throw new CustomError.BadRequest(
+      "Invalid 'date_from' parameter. It should be in YYYYMMDD format."
+    );
+  }
+
+  // Validate 'date_to' parameter
+  if (!date_to || !dateFormatRegex.test(date_to)) {
+    throw new CustomError.BadRequest(
+      "Invalid 'date_to' parameter. It should be in YYYYMMDD format."
+    );
+  }
+
+  // Format the dates to YYYY-MM-DD for SQL compatibility
+  const formattedDateFrom = `${date_from.slice(0, 4)}-${date_from.slice(
+    4,
+    6
+  )}-${date_from.slice(6, 8)}`;
+  const formattedDateTo = `${date_to.slice(0, 4)}-${date_to.slice(
+    4,
+    6
+  )}-${date_to.slice(6, 8)}`;
+
+  const query = `
+    `;
+
+  const [rows] = await pool.execute(query, [id, road, formattedDateFrom, formattedDateTo]);
+
+  if (rows.length === 0) {
+    throw new CustomError.NoContent("No toll passes found for the specified road.");
+  }
+
+  if (format === "csv") {
+    const csv = json2csv(rows);
+    res.header("Content-Type", "text/csv");
+    res.attachment("traffic_variation_per_road.csv");
+    return res.send(csv);
+  }
+
+  res.json(rows);
+});
+
+const TrafficDistribution = asyncHandler(async (req, res) => {
+  
+  const { id, date_from, date_to } = req.params; // Extract signed-in operatorID 
+  const { format = "json" } = req.query; // Default to 'json' if format is not provided
+
+  // Validate operatorID 
+  if (!id) {
+    throw new CustomError.BadRequest("Invalid operator ID.");
+  }
+
+  // Regular expression to validate date format (YYYYMMDD)
+  const dateFormatRegex = /^\d{8}$/;
+
+  // Validate 'date_from' parameter
+  if (!date_from || !dateFormatRegex.test(date_from)) {
+    throw new CustomError.BadRequest(
+      "Invalid 'date_from' parameter. It should be in YYYYMMDD format."
+    );
+  }
+
+  // Validate 'date_to' parameter
+  if (!date_to || !dateFormatRegex.test(date_to)) {
+    throw new CustomError.BadRequest(
+      "Invalid 'date_to' parameter. It should be in YYYYMMDD format."
+    );
+  }
+
+  // Format the dates to YYYY-MM-DD for SQL compatibility
+  const formattedDateFrom = `${date_from.slice(0, 4)}-${date_from.slice(
+    4,
+    6
+  )}-${date_from.slice(6, 8)}`;
+  const formattedDateTo = `${date_to.slice(0, 4)}-${date_to.slice(
+    4,
+    6
+  )}-${date_to.slice(6, 8)}`;
+
+  const query = `
+    `;
+
+  const [rows] = await pool.execute(query, [id, formattedDateFrom, formattedDateTo]);
+
+  if (rows.length === 0) {
+    throw new CustomError.NoContent("No toll passes found for the specified operator.");
+  }
+
+  if (format === "csv") {
+    const csv = json2csv(rows);
+    res.header("Content-Type", "text/csv");
+    res.attachment("traffic_distribution.csv");
+    return res.send(csv);
+  }
+
+  res.json(rows);
+});
+
+const TollBooths = asyncHandler(async (req, res) => {
+  
+  const { id, date_from, date_to } = req.params; // Extract signed-in operatorID 
+  const { format = "json" } = req.query; // Default to 'json' if format is not provided
+
+  // Validate operatorID 
+  if (!id) {
+    throw new CustomError.BadRequest("Invalid operator ID.");
+  }
+
+  // Regular expression to validate date format (YYYYMMDD)
+  const dateFormatRegex = /^\d{8}$/;
+
+  // Validate 'date_from' parameter
+  if (!date_from || !dateFormatRegex.test(date_from)) {
+    throw new CustomError.BadRequest(
+      "Invalid 'date_from' parameter. It should be in YYYYMMDD format."
+    );
+  }
+
+  // Validate 'date_to' parameter
+  if (!date_to || !dateFormatRegex.test(date_to)) {
+    throw new CustomError.BadRequest(
+      "Invalid 'date_to' parameter. It should be in YYYYMMDD format."
+    );
+  }
+
+  // Format the dates to YYYY-MM-DD for SQL compatibility
+  const formattedDateFrom = `${date_from.slice(0, 4)}-${date_from.slice(
+    4,
+    6
+  )}-${date_from.slice(6, 8)}`;
+  const formattedDateTo = `${date_to.slice(0, 4)}-${date_to.slice(
+    4,
+    6
+  )}-${date_to.slice(6, 8)}`;
+
+  const query = `
+    `;
+
+  const [rows] = await pool.execute(query, [id, formattedDateFrom, formattedDateTo]);
+
+  if (rows.length === 0) {
+    throw new CustomError.NoContent("No toll passes found for the specified operator.");
+  }
+
+  if (format === "csv") {
+    const csv = json2csv(rows);
+    res.header("Content-Type", "text/csv");
+    res.attachment("toll_booths.csv");
+    return res.send(csv);
+  }
+
+  res.json(rows);
+});
+
+const DebtHistoryChart = asyncHandler(async (req, res) => {
+  
+  const { id, date_from, date_to } = req.params; // Extract signed-in operatorID 
+  const { format = "json" } = req.query; // Default to 'json' if format is not provided
+
+  // Validate operatorID 
+  if (!id) {
+    throw new CustomError.BadRequest("Invalid operator ID.");
+  }
+
+  // Regular expression to validate date format (YYYYMMDD)
+  const dateFormatRegex = /^\d{8}$/;
+
+  // Validate 'date_from' parameter
+  if (!date_from || !dateFormatRegex.test(date_from)) {
+    throw new CustomError.BadRequest(
+      "Invalid 'date_from' parameter. It should be in YYYYMMDD format."
+    );
+  }
+
+  // Validate 'date_to' parameter
+  if (!date_to || !dateFormatRegex.test(date_to)) {
+    throw new CustomError.BadRequest(
+      "Invalid 'date_to' parameter. It should be in YYYYMMDD format."
+    );
+  }
+
+  // Format the dates to YYYY-MM-DD for SQL compatibility
+  const formattedDateFrom = `${date_from.slice(0, 4)}-${date_from.slice(
+    4,
+    6
+  )}-${date_from.slice(6, 8)}`;
+  const formattedDateTo = `${date_to.slice(0, 4)}-${date_to.slice(
+    4,
+    6
+  )}-${date_to.slice(6, 8)}`;
+
+  const query = `
+    `;
+
+  const [rows] = await pool.execute(query, [id, formattedDateFrom, formattedDateTo]);
+
+  if (rows.length === 0) {
+    throw new CustomError.NoContent("No debt history found for the specified operator.");
+  }
+
+  if (format === "csv") {
+    const csv = json2csv(rows);
+    res.header("Content-Type", "text/csv");
+    res.attachment("debt_history_chart.csv");
+    return res.send(csv);
+  }
+
+  res.json(rows);
+});
+
+const OwedAmountsChart = asyncHandler(async (req, res) => {
+  
+  const { id, date_from, date_to } = req.params; // Extract signed-in operatorID 
+  const { format = "json" } = req.query; // Default to 'json' if format is not provided
+
+  // Validate operatorID 
+  if (!id) {
+    throw new CustomError.BadRequest("Invalid operator ID.");
+  }
+
+  // Regular expression to validate date format (YYYYMMDD)
+  const dateFormatRegex = /^\d{8}$/;
+
+  // Validate 'date_from' parameter
+  if (!date_from || !dateFormatRegex.test(date_from)) {
+    throw new CustomError.BadRequest(
+      "Invalid 'date_from' parameter. It should be in YYYYMMDD format."
+    );
+  }
+
+  // Validate 'date_to' parameter
+  if (!date_to || !dateFormatRegex.test(date_to)) {
+    throw new CustomError.BadRequest(
+      "Invalid 'date_to' parameter. It should be in YYYYMMDD format."
+    );
+  }
+
+  // Format the dates to YYYY-MM-DD for SQL compatibility
+  const formattedDateFrom = `${date_from.slice(0, 4)}-${date_from.slice(
+    4,
+    6
+  )}-${date_from.slice(6, 8)}`;
+  const formattedDateTo = `${date_to.slice(0, 4)}-${date_to.slice(
+    4,
+    6
+  )}-${date_to.slice(6, 8)}`;
+
+  const query = `
+    `;
+
+  const [rows] = await pool.execute(query, [id, formattedDateFrom, formattedDateTo]);
+
+  if (rows.length === 0) {
+    throw new CustomError.NoContent("No owed amounts found for the specified operator.");
+  }
+
+  if (format === "csv") {
+    const csv = json2csv(rows);
+    res.header("Content-Type", "text/csv");
+    res.attachment("owed_amounts_chart.csv");
+    return res.send(csv);
+  }
+
+  res.json(rows);
+});
+
+const RevenueDistribution = asyncHandler(async (req, res) => {
+  
+  const { id, date_from, date_to } = req.params; // Extract signed-in operatorID 
+  const { format = "json" } = req.query; // Default to 'json' if format is not provided
+
+  // Validate operatorID 
+  if (!id) {
+    throw new CustomError.BadRequest("Invalid operator ID.");
+  }
+
+  // Regular expression to validate date format (YYYYMMDD)
+  const dateFormatRegex = /^\d{8}$/;
+
+  // Validate 'date_from' parameter
+  if (!date_from || !dateFormatRegex.test(date_from)) {
+    throw new CustomError.BadRequest(
+      "Invalid 'date_from' parameter. It should be in YYYYMMDD format."
+    );
+  }
+
+  // Validate 'date_to' parameter
+  if (!date_to || !dateFormatRegex.test(date_to)) {
+    throw new CustomError.BadRequest(
+      "Invalid 'date_to' parameter. It should be in YYYYMMDD format."
+    );
+  }
+
+  // Format the dates to YYYY-MM-DD for SQL compatibility
+  const formattedDateFrom = `${date_from.slice(0, 4)}-${date_from.slice(
+    4,
+    6
+  )}-${date_from.slice(6, 8)}`;
+  const formattedDateTo = `${date_to.slice(0, 4)}-${date_to.slice(
+    4,
+    6
+  )}-${date_to.slice(6, 8)}`;
+
+  const query = `
+    `;
+
+  const [rows] = await pool.execute(query, [id, formattedDateFrom, formattedDateTo]);
+
+  if (rows.length === 0) {
+    throw new CustomError.NoContent("No revenue found for the specified operator.");
+  }
+
+  if (format === "csv") {
+    const csv = json2csv(rows);
+    res.header("Content-Type", "text/csv");
+    res.attachment("revenue_distribution.csv");
+    return res.send(csv);
+  }
+
+  res.json(rows);
+});
+
+
+module.exports = 
+{ NotSettled, 
+  TotalNotSettled, 
+  NotVerified, 
+  TotalNotVerified, 
+  SettleDebt, 
+  VerifyPayment, 
+  HistoryDebt, 
+  TrafficVariation, 
+  RoadsPerOperator, 
+  TrafficVariationPerRoad,
+  TrafficDistribution,
+  TollBooths,
+  DebtHistoryChart,
+  OwedAmountsChart,
+  RevenueDistribution
+};
