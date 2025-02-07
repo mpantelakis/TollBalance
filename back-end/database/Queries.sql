@@ -362,3 +362,19 @@ GROUP BY m.month
 ORDER BY m.month DESC;
 
 
+/*
+ * Revenues per road
+ */
+
+SELECT
+	r.name AS road,
+	ROUND(SUM(p.charge), 1) AS totalRevenues
+FROM toll_passes p
+JOIN toll_stations s
+ON p.toll_id = s.id
+JOIN roads r
+ON r.id = s.road_id
+WHERE s.op_id = 'NAO' 
+	AND p.timestamp >= '2022-03-01'
+	AND p.timestamp <= '2023-03-31'
+GROUP BY r.name;
