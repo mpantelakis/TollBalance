@@ -259,6 +259,19 @@ ORDER BY m.month DESC;
 
 
 /*
+ * An Operator's Roads
+ */
+
+SELECT
+	r.*
+FROM toll_stations s
+JOIN roads r
+ON r.id = s.road_id
+WHERE s.op_id = 'NAO'
+GROUP BY r.id;
+
+
+/*
  * Monthly passes through a company's toll network
  */
 
