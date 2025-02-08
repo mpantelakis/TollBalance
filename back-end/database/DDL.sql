@@ -192,3 +192,77 @@ BEGIN
 END //
 
 DELIMITER ;
+
+
+DELIMITER //
+
+CREATE PROCEDURE view_all_credit_histories(IN loggedInId VARCHAR(4), IN startDate DATE, IN endDate DATE)
+BEGIN
+	SET @ops = NULL;
+
+	SELECT
+  		GROUP_CONCAT(
+    			CONCAT(
+				'ROUND(COALESCE(SUM(CASE WHEN d.debtor = ''', id, ''' THEN d.amount END), 0), 1) AS ', name, ''
+    			)
+  		) INTO @ops
+	FROM operators
+	WHERE id != loggedInId;
+	
+	SET @ops= CONCAT('
+		SELECT
+			m.month AS month,
+			', @ops, '
+		FROM months m
+		LEFT JOIN debts d
+		ON DATE_FORMAT(d.date_created, "%Y-%m") = m.month
+			AND d.creditor = ''', loggedInId, '''
+		WHERE m.month >= DATE_FORMAT(''', startDate, ''', "%Y-%m")
+			AND m.month <= DATE_FORMAT(''', endDate, ''', "%Y-%m")
+		GROUP BY m.month
+		ORDER BY m.month DESC;
+	');
+	
+	PREPARE stmt FROM @ops;
+	EXECUTE stmt;
+	DEALLOCATE PREPARE stmt;
+END //
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE PROCEDURE view_all_debt_histories(IN loggedInId VARCHAR(4), IN startDate DATE, IN endDate DATE)
+BEGIN
+	SET @ops = NULL;
+
+	SELECT
+  		GROUP_CONCAT(
+    			CONCAT(
+				'ROUND(COALESCE(SUM(CASE WHEN d.creditor = ''', id, ''' THEN d.amount END), 0), 1) AS ', name, ''
+    			)
+  		) INTO @ops
+	FROM operators
+	WHERE id != loggedInId;
+	
+	SET @ops= CONCAT('
+		SELECT
+			m.month AS month,
+			', @ops, '
+		FROM months m
+		LEFT JOIN debts d
+		ON DATE_FORMAT(d.date_created, "%Y-%m") = m.month
+			AND d.debtor = ''', loggedInId, '''
+		WHERE m.month >= DATE_FORMAT(''', startDate, ''', "%Y-%m")
+			AND m.month <= DATE_FORMAT(''', endDate, ''', "%Y-%m")
+		GROUP BY m.month
+		ORDER BY m.month DESC;
+	');
+	
+	PREPARE stmt FROM @ops;
+	EXECUTE stmt;
+	DEALLOCATE PREPARE stmt;
+END //
+
+DELIMITER ;

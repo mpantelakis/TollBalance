@@ -354,24 +354,6 @@ LIMIT 5;
 
 
 /*
- * Debt/Credit History
- */	
-
-SELECT 
-	m.month AS month,
-	ROUND(COALESCE(SUM(d.amount), 0), 1) AS totalDebts
-FROM months m
-LEFT JOIN debts d
-ON DATE_FORMAT(d.date_created, '%Y-%m') = m.month
-	AND d.creditor = 'NAO'
-	AND d.debtor = 'EG'
-WHERE m.month >= DATE_FORMAT('2022-03-01', '%Y-%m')
-	AND m.month <= DATE_FORMAT('2023-03-01', '%Y-%m')
-GROUP BY m.month
-ORDER BY m.month DESC;
-
-
-/*
  * Revenues per road
  */
 
@@ -387,3 +369,37 @@ WHERE s.op_id = 'NAO'
 	AND p.timestamp >= '2022-03-01'
 	AND p.timestamp <= '2023-03-31'
 GROUP BY r.name;
+
+
+/*
+ * Combined Debt History
+ */
+
+CALL view_all_debt_histories('NAO', '2022-03-01', '2023-03-31');
+
+
+/*
+ * Combined Credit History
+ */
+
+CALL view_all_credit_histories('NAO', '2022-03-01', '2023-03-31');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
