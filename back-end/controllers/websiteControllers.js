@@ -523,48 +523,14 @@ const MostPopularTollBooths = asyncHandler(async (req, res) => {
   res.json(rows);
 });
 
-const OtherOperators = asyncHandler(async (req, res) => {
+const DebtHistoryChart = asyncHandler(async (req, res) => {
   
-  const { id } = req.params; // Extract signed-in operatorID 
+  const { id, date_from, date_to } = req.params; // Debtor is the signed-in operator
   const { format = "json" } = req.query; // Default to 'json' if format is not provided
 
   // Validate operatorID 
   if (!id) {
     throw new CustomError.BadRequest("Invalid operator ID.");
-  }
-
-  const query = `
-  SELECT * FROM operators WHERE id != ?;
-    `;
-
-  const [rows] = await pool.execute(query, [id]);
-
-  if (rows.length === 0) {
-    throw new CustomError.NoContent("No other operators found.");
-  }
-
-  if (format === "csv") {
-    const csv = json2csv(rows);
-    res.header("Content-Type", "text/csv");
-    res.attachment("other_operators.csv");
-    return res.send(csv);
-  }
-
-  res.json(rows);
-});
-
-const DebtHistoryChart = asyncHandler(async (req, res) => {
-  
-  const { debtorId, creditorId, date_from, date_to } = req.params; // Debtor is the signed-in operator
-  const { format = "json" } = req.query; // Default to 'json' if format is not provided
-
-  // Validate operatorID 
-  if (!debtorId) {
-    throw new CustomError.BadRequest("Invalid operator ID.");
-  }
-
-  if (!creditorId) {
-    throw new CustomError.BadRequest("Invalid creditor ID.");
   }
 
   // Validate 'date_from' parameter
@@ -582,21 +548,10 @@ const DebtHistoryChart = asyncHandler(async (req, res) => {
   }
 
   const query = `
-  SELECT 
-    m.month AS month,
-    ROUND(COALESCE(SUM(d.amount), 0), 1) AS totalDebts
-  FROM months m
-  LEFT JOIN debts d
-  ON DATE_FORMAT(d.date_created, '%Y-%m') = m.month
-    AND d.creditor = ?
-    AND d.debtor = ?
-  WHERE m.month >= DATE_FORMAT(?, '%Y-%m')
-    AND m.month <= DATE_FORMAT(?, '%Y-%m')
-  GROUP BY m.month
-  ORDER BY m.month DESC;
+  CALL view_all_debt_histories(?, ?, ?);
     `;
 
-  const [rows] = await pool.execute(query, [creditorId, debtorId, date_from, date_to]);
+  const [rows] = await pool.execute(query, [id, date_from, date_to]);
 
   if (rows.length === 0) {
     throw new CustomError.NoContent("No debt history found for the specified operator.");
@@ -614,16 +569,12 @@ const DebtHistoryChart = asyncHandler(async (req, res) => {
 
 const OwedAmountsChart = asyncHandler(async (req, res) => {
   
-  const { creditorId, debtorId, date_from, date_to } = req.params; // Creditor is the signed-in operator 
+  const { id, date_from, date_to } = req.params; // Creditor is the signed-in operator 
   const { format = "json" } = req.query; // Default to 'json' if format is not provided
 
   // Validate operatorID 
-  if (!debtorId) {
+  if (!id) {
     throw new CustomError.BadRequest("Invalid operator ID.");
-  }
-
-  if (!creditorId) {
-    throw new CustomError.BadRequest("Invalid creditor ID.");
   }
 
   // Validate 'date_from' parameter
@@ -641,21 +592,10 @@ const OwedAmountsChart = asyncHandler(async (req, res) => {
   }
 
   const query = `
-  SELECT 
-    m.month AS month,
-    ROUND(COALESCE(SUM(d.amount), 0), 1) AS totalDebts
-  FROM months m
-  LEFT JOIN debts d
-  ON DATE_FORMAT(d.date_created, '%Y-%m') = m.month
-    AND d.creditor = ?
-    AND d.debtor = ?
-  WHERE m.month >= DATE_FORMAT(?, '%Y-%m')
-    AND m.month <= DATE_FORMAT(?, '%Y-%m')
-  GROUP BY m.month
-  ORDER BY m.month DESC;
+  CALL view_all_credit_histories(?, ?, ?);
     `;
 
-  const [rows] = await pool.execute(query, [creditorId, debtorId, date_from, date_to]);
+  const [rows] = await pool.execute(query, [id, date_from, date_to]);
 
   if (rows.length === 0) {
     throw new CustomError.NoContent("No owed amounts found for the specified operator.");
@@ -740,7 +680,6 @@ module.exports =
   TrafficVariationPerRoad,
   TrafficDistribution,
   MostPopularTollBooths,
-  OtherOperators,
   DebtHistoryChart,
   OwedAmountsChart,
   RevenueDistribution
