@@ -9,14 +9,14 @@ const authenticateUser = AsyncHandler(async (req, res, next) => {
 
   // If no token is provided, throw a NotAuthorized error
   if (!token) {
-    throw new CustomError.NotAuthorized("Not authorized session");
+    throw new CustomError.NotAuthorized("Not authorized API call");
   }
 
   // Verify the token using the JWT secret from environment variables
   jwt.verify(token, process.env.JWT_SECRET, (err) => {
     // If the token is invalid or expired, throw a NotAuthorized error
     if (err) {
-      throw new CustomError.NotAuthorized("Not authorized session");
+      throw new CustomError.NotAuthorized("Not authorized API call");
     }
   });
 

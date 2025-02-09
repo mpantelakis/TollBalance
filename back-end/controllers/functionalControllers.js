@@ -12,8 +12,8 @@ const tollStationPasses = asyncHandler(async (req, res) => {
   const { tollStationID, date_from, date_to } = req.params;
   const { format = "json" } = req.query; // Default to 'json' if format is not provided
 
-  // Validate toll station ID
-  if (!tollStationID) {
+  const tollStationIDRegex = /^(?=.*[A-Z])(?=.*\d)[A-Z0-9]+$/;
+  if (!tollStationID || !tollStationIDRegex.test(tollStationID)) {
     throw new CustomError.BadRequest("Invalid toll station ID.");
   }
 
@@ -66,6 +66,7 @@ const tollStationPasses = asyncHandler(async (req, res) => {
             WHERE toll_id = ?
                 AND timestamp >= ?
                 AND timestamp <= ?
+            ORDER BY timestamp ASC
         )
         SELECT
 			toll_stations.id as stationID,
@@ -118,7 +119,7 @@ const tollStationPasses = asyncHandler(async (req, res) => {
   }
 
   // Default to JSON format if 'csv' is not specified
-  res.json(rows);
+  res.json(rows[0]);
 });
 
 // Handler to analyze passes based on station and tag operator IDs and date range
@@ -127,11 +128,12 @@ const passAnalysis = asyncHandler(async (req, res) => {
   const { format = "json" } = req.query; // Default to 'json' if format is not provided
 
   // Validate station and tag operator IDs
-  if (!stationOpID) {
+  const OpIDRegex = /^[A-Z]+$/;
+  if (!stationOpID || !OpIDRegex.test(stationOpID)) {
     throw new CustomError.BadRequest("Invalid station operator ID.");
   }
 
-  if (!tagOpID) {
+  if (!tagOpID || !OpIDRegex.test(tagOpID)) {
     throw new CustomError.BadRequest("Invalid tag operator ID.");
   }
 
@@ -176,6 +178,7 @@ const passAnalysis = asyncHandler(async (req, res) => {
                 AND p.tag_operator_id = ?
                 AND p.timestamp >= ?
                 AND p.timestamp <= ?
+            ORDER BY timestamp ASC
         )
         SELECT
             ? AS stationOpID,
@@ -209,7 +212,7 @@ const passAnalysis = asyncHandler(async (req, res) => {
   ]);
 
   // If no data is found, return a "No Content" error
-  if (rows.length === 0) {
+  if (rows[0].passList === null) {
     throw new CustomError.NoContent(
       "No data found for the specified parameters."
     );
@@ -223,7 +226,7 @@ const passAnalysis = asyncHandler(async (req, res) => {
   }
 
   // Default to JSON format if 'csv' is not specified
-  res.json(rows);
+  res.json(rows[0]);
 });
 
 // Handler to calculate the total cost of passes based on operator and date range
@@ -231,12 +234,13 @@ const passesCost = asyncHandler(async (req, res) => {
   const { tollOpID, tagOpID, date_from, date_to } = req.params;
   const { format = "json" } = req.query; // Default to 'json' if format is not provided
 
-  // Validate station and tag operator IDs
-  if (!tollOpID) {
-    throw new CustomError.BadRequest("Invalid station operator ID.");
+  // Validate toll and tag operator IDs
+  const OpIDRegex = /^[A-Z]+$/;
+  if (!tollOpID || !OpIDRegex.test(tollOpID)) {
+    throw new CustomError.BadRequest("Invalid toll operator ID.");
   }
 
-  if (!tagOpID) {
+  if (!tagOpID || !OpIDRegex.test(tagOpID)) {
     throw new CustomError.BadRequest("Invalid tag operator ID.");
   }
 
@@ -295,7 +299,7 @@ const passesCost = asyncHandler(async (req, res) => {
   ]);
 
   // If no data is found, return a "No Content" error
-  if (rows.length === 0) {
+  if (rows[0].passesCost === null) {
     throw new CustomError.NoContent(
       "No data found for the specified parameters."
     );
@@ -310,7 +314,7 @@ const passesCost = asyncHandler(async (req, res) => {
   }
 
   // Default to JSON format if 'csv' is not specified
-  res.json(rows);
+  res.json(rows[0]);
 });
 
 // Handler to calculate charges for visits by different operators
@@ -319,7 +323,8 @@ const chargesBy = asyncHandler(async (req, res) => {
   const { format = "json" } = req.query; // Default to 'json' if format is not provided
 
   // Validate toll operator ID
-  if (!tollOpID) {
+  const tollOpIDRegex = /^[A-Z]+$/;
+  if (!tollOpID || !tollOpIDRegex.test(tollOpID)) {
     throw new CustomError.BadRequest("Invalid station operator ID.");
   }
 
@@ -387,7 +392,7 @@ const chargesBy = asyncHandler(async (req, res) => {
   ]);
 
   // If no data is found, return a "No Content" error
-  if (rows.length === 0) {
+  if (rows[0].VOpList === null) {
     throw new CustomError.NoContent(
       "No data found for the specified parameters."
     );
@@ -402,7 +407,7 @@ const chargesBy = asyncHandler(async (req, res) => {
   }
 
   // Default to JSON format if 'csv' is not specified
-  res.json(rows);
+  res.json(rows[0]);
 });
 
 // Export all the handlers as a module
