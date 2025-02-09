@@ -138,10 +138,10 @@ function App() {
                 )
               } 
             />
-            <Route 
+            {/* <Route 
             path="/traffic-variation-over-time" 
-            element={isAuthenticated ? <DebtHistoryChart/> : <Navigate to="/" replace />} 
-           />
+            element={isAuthenticated ? <TrafficVariationChart/> : <Navigate to="/" replace />} 
+           /> */}
             <Route 
             path="/debt-history-over-time" 
             element={isAuthenticated ? <DebtHistoryChart/> : <Navigate to="/" replace />} 
