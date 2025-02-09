@@ -1,20 +1,29 @@
 /* HomePage/HomePage.css */
 
 .homepage-container { /* New container for overall layout */
+    
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     height: 100vh;
     margin: 0;
-    gap: 20px; /* Space between elements */
+    /* gap: 20px; /*Space between elements */
+  }
+  .homepage-container .buttons-container { /* Scope the styles to the wrapper */
+    display: flex;
+    gap: 30px; 
+    backdrop-filter: blur(5px); 
+    border-radius: 10px; 
+    background-color: rgba(255, 255, 255, 0); 
+    padding: 0px; 
   }
   
   .buttons-container {
     display: flex;
     gap: 30px; /* Space between buttons */
     backdrop-filter: blur(5px); 
-    /* padding: 30px;  */
+    padding: 30px; 
     border-radius: 10px; 
     background-color: rgba(255, 255, 255, 0.2); /* Add a semi-transparent background */
   }
@@ -33,11 +42,11 @@
     color: #fff;
     background-color: rgba(250, 250, 250, .5);
     border: none;
-    border-radius: 5px;
+    border-radius: 10px;
     cursor: pointer;
     transition: background-color 0.3s ease;
     text-align: center;
-    width: 700px; /* Adjusted width */
+    width: 650px; /* Adjusted width */
     height: 600px; /* Adjusted height */
   }
   

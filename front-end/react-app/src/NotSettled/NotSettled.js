@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import './NotSettled.css';
 
 const NotSettled = () => {
@@ -7,18 +6,19 @@ const NotSettled = () => {
   const [totalNotSettled, setTotalNotSettled] = useState(0);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+  
 
   useEffect(() => {
     const fetchNotSettledData = async () => {
-      try {
-        const token = localStorage.getItem('authToken');
-        if (!token) {
-          setError('You are not authorized.');
-          navigate('/');
-          return;
-        }
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        // If no token, do not redirect automatically, just show the error
+        setError('You are not authorized.');
+        setLoading(false);
+        return;
+      }
 
+      try {
         const { id } = JSON.parse(localStorage.getItem('userDetails'));
 
         const debtsResponse = await fetch(`http://localhost:9115/api/notsettled/${id}`, {
@@ -38,7 +38,6 @@ const NotSettled = () => {
         } else {
           const errorData = await debtsResponse.json();
           setError(errorData.message || 'Failed to fetch unsettled debts.');
-          return;
         }
 
         const totalResponse = await fetch(`http://localhost:9115/api/totalnotsettled/${id}`, {
@@ -62,25 +61,20 @@ const NotSettled = () => {
     };
 
     fetchNotSettledData();
-  }, [navigate]);
+  }, []); // Removed 'navigate' from dependency array because it isn't needed in this case.
 
   const fetchDebtHistory = async (creditorId, debtorId, index) => {
-    try {
-      const token = localStorage.getItem('authToken');
-      if (!token) {
-        setError('You are not authorized.');
-        navigate('/');
-        return;
-      }
-      // Extract the debtorId from localStorage
-      const { id: debtorId } = JSON.parse(localStorage.getItem('userDetails'));
-      console.log('Extracted debtor ID:', debtorId); // Debug log to verify debtorId
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      setError('You are not authorized.');
+      return;
+    }
 
-      // Log the creditorId to verify its value
-      console.log('Creditor ID:', creditorId); 
+    try {
+      const { id: debtorId } = JSON.parse(localStorage.getItem('userDetails'));
 
       const response = await fetch(
-        `http://localhost:9115/api/historydebt/${creditorId}/${debtorId}`,
+        `http://localhost:9115/api/historydebt/${debtorId}/${creditorId}`,
         {
           headers: {
             'x-observatory-auth': token,
@@ -90,12 +84,7 @@ const NotSettled = () => {
 
       if (response.ok) {
         const historyData = await response.json();
-        console.log('Debt history response:', historyData);
-
-        // Extract the history data from the response array
-        const debtHistory = historyData[0]; // The first element contains the actual history data
-
-        
+        const debtHistory = historyData;
         setDebts((prevDebts) =>
           prevDebts.map((debt, i) =>
             i === index ? { ...debt, history: debtHistory } : debt
@@ -126,15 +115,14 @@ const NotSettled = () => {
   };
 
   const settleDebt = async (creditorId) => {
-    try {
-      const token = localStorage.getItem('authToken');
-      const { id: debtorId } = JSON.parse(localStorage.getItem('userDetails'));
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      setError('You are not authorized.');
+      return;
+    }
 
-      if (!token) {
-        setError('You are not authorized.');
-        navigate('/');
-        return;
-      }
+    try {
+      const { id: debtorId } = JSON.parse(localStorage.getItem('userDetails'));
 
       const response = await fetch(
         `http://localhost:9115/api/settledebt/${debtorId}/${creditorId}`,
@@ -211,21 +199,21 @@ const NotSettled = () => {
                 </div>
               </div>
               {debt.isOpen && (
-              <div className="debt-dropdown">
-                <h4>Debt History:</h4>
-                <ul>
-                  {debt.history && debt.history.length > 0 ? (
-                    debt.history.map((entry, idx) => (
-                      <li key={idx}>
-                        {entry.month}: {entry.totalDebts} €
-                      </li>
-                    ))
-                  ) : (
-                    <li>No history available.</li>
-                  )}
-                </ul>
-              </div>
-            )}
+                <div className="debt-dropdown">
+                  <h4>Debt History:</h4>
+                  <ul>
+                    {debt.history && debt.history.length > 0 ? (
+                      debt.history.map((entry, idx) => (
+                        <li key={idx}>
+                          {entry.month}: {entry.totalDebts} €
+                        </li>
+                      ))
+                    ) : (
+                      <li>No history available.</li>
+                    )}
+                  </ul>
+                </div>
+              )}
             </div>
           ))}
         </div>

@@ -18,7 +18,8 @@ const Login = ({ onLogin }) => {
       try {
         const decodedToken = jwtDecode(token);
         if (decodedToken.exp * 1000 > Date.now()) {
-          navigate('/homepage', { replace: true }); // Redirect if already authenticated
+          // Only redirect if you're at login page and the token is valid
+          navigate('/homepage', { replace: true });
         }
       } catch (error) {
         console.error('Invalid token:', error);

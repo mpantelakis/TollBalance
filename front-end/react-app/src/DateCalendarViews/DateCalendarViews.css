@@ -1,0 +1,46 @@
+/* DateCalendarViews.css */
+.calendar-container {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px; 
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); 
+  }
+  
+  .calendar-header {
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 2 columns for the calendars */
+    gap: 10px;
+  }
+  
+  .calendar-month .MuiDayCalendar-monthContainer { /* Target the month container */
+    grid-template-columns: repeat(3, 1fr); /* 3 columns for months in a row */
+  }
+  
+  .calendar-month .MuiPickersCalendarHeader-labelContainer {
+    background-color: white; /* White background for the year selector */
+    border: none; /* Remove border from year selector */
+    border-radius: 5px; /* Add rounded corners to year selector */
+  }
+  
+  .calendar-month .MuiPickersCalendarHeader-switchHeader {
+    /* Hide the arrows in the year selector */
+    visibility: hidden; 
+  }
+  
+  .calendar-month .MuiPickersDay-dayWithMargin {
+    border-radius: 50%; /* Make the day cells circular */
+    border: none; /* Remove border from day cells */
+  }
+  
+  .calendar-month .MuiPickersDay-dayWithMargin:hover {
+    background-color: #f5f5f5; /* Add a hover effect */
+  }
+  
+  .calendar-month .MuiPickersDay-daySelected {
+    background-color: #e0f2f7; /* Light blue background for selected day */
+  }

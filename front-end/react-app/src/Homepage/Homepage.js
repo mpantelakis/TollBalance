@@ -18,11 +18,13 @@ function Homepage() {
   };
 
   const handleButton2Click = () => {
+    // navigate('/calendar'); 
+    navigate('/selectdiagram');
     console.log('Button 2 clicked!');
   };
 
   return (
-    <div>
+    <div className="homepage-container"> {/* Add the wrapper class */}
       {/* <h1>Welcome!</h1> */}
       <div className="buttons-container">
         <div className="button-container">
@@ -38,6 +40,10 @@ function Homepage() {
         <div className="button-container">
           <button className="path-button" onClick={handleButton2Click}>
             View Analytics Chart
+            <p className="path-button-description">
+            View a variety of analytics charts that provide insights into traffic, 
+            tolls usage, revenue distribution, and debt trends.
+            </p>
           </button>
         </div>
       </div>
