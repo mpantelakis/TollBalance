@@ -11,7 +11,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
   // Check if both username and password are provided
   if (!username || !password) {
-    throw new CustomError.BadRequest("Username and password are required");
+    throw new CustomError.BadRequest("Credentials are required");
   }
 
   if (username == "admin") {
@@ -36,7 +36,7 @@ const loginUser = asyncHandler(async (req, res) => {
       { username: user[0].username },
       process.env.JWT_SECRET, // Secret key for JWT signing
       {
-        expiresIn: "1h", // Token expires in 1 hour
+        expiresIn: "2h", // Token expires in 1 hour
       }
     );
 
