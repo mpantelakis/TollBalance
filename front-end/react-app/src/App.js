@@ -9,7 +9,13 @@ import Homepage from './Homepage/Homepage';
 import DateCalendarViews from './DateCalendarViews/DateCalendarViews';
 import SelectDiagram from './SelectDiagram/SelectDiagram';
 import TrafficVariationForRoadChart from './TrafficVariationForRoadChart/TrafficVariationForRoadChart';
+import TrafficDistributionAcrossRoads from './TrafficDistributionAcrossRoads/TrafficDistributionAcrossRoads';
+import TrafficVariationChart from './TrafficVariationChart/TrafficVariationChart';
 import DebtHistoryChart from './DebtHistoryChart/DebtHistoryChart';
+import RevenueDistributionAcrossRoads from './RevenueDistributionAcrossRoads/RevenueDistributionAcrossRoads';
+import MostPopularTollBooths from './MostPopularTollBooths/MostPopularTollBooths';
+import OwedAmountsChart from './OwedAmountsChart/OwedAmountsChart';
+import HomeButton from './HomeButton/HomeButton';
 import './App.css';
 
 function App() {
@@ -84,12 +90,12 @@ function App() {
             }
           />
           <Route
-            path="/notsettled"
+            path="/managedebts"
             element={
               isAuthenticated ? (
                 <>
                   <div className="logout-container">
-                    <Logout />
+                    <HomeButton />
                   </div>
                   <div className="main-container">
                     <NotSettled onLogout={handleLogout} />
@@ -101,51 +107,49 @@ function App() {
               )
             }
           />
+
+
           <Route path="*" element={<Navigate to="/" />} />
 
           <Route 
             path="/calendar" 
             element={isAuthenticated ? <DateCalendarViews /> : <Navigate to="/" replace />} 
           />
-          <Route 
-              path="/selectdiagram" 
-              element={
-                isAuthenticated ? (
-                  <>
-                    <div className="logout-container">
-                      <Logout />
-                    </div>
-                    <SelectDiagram />
-                  </>
-                ) : (
-                  <Navigate to="/" replace />
-                )
-              } 
-            />
 
-            <Route 
-              path="/traffic-variation-for-road" 
-              element={
-                isAuthenticated ? (
-                  <>
-                    <div className="logout-container">
-                      <Logout />
-                    </div>
-                    <TrafficVariationForRoadChart />
-                  </>
-                ) : (
-                  <Navigate to="/" replace />
-                )
-              } 
-            />
-            {/* <Route 
-            path="/traffic-variation-over-time" 
-            element={isAuthenticated ? <TrafficVariationChart/> : <Navigate to="/" replace />} 
-           /> */}
-            <Route 
-            path="/debt-history-over-time" 
-            element={isAuthenticated ? <DebtHistoryChart/> : <Navigate to="/" replace />} 
-           />
+          <Route 
+          path="/selectdiagram" 
+          element={isAuthenticated ? <SelectDiagram />: <Navigate to="/" replace />} 
+          />
+
+          <Route 
+          path="/traffic-variation-for-road" 
+          element={isAuthenticated ? <TrafficVariationForRoadChart />: <Navigate to="/" replace />} 
+          />
+          <Route 
+          path="/traffic-distribution-over-time" 
+          element={isAuthenticated ? <TrafficDistributionAcrossRoads/> : <Navigate to="/" replace />} 
+          />
+          <Route 
+          path="/traffic-variation-over-time" 
+          element={isAuthenticated ? <TrafficVariationChart/> : <Navigate to="/" replace />} 
+          />
+          <Route 
+          path="/most-popular-toll-booths" 
+          element={isAuthenticated ? < MostPopularTollBooths/> : <Navigate to="/" replace />} 
+          />
+          <Route 
+          path="/debt-history-over-time" 
+          element={isAuthenticated ? <DebtHistoryChart/> : <Navigate to="/" replace />} 
+          />
+          <Route 
+          path="/amounts-owed-by-other-companies-over-time" 
+          element={isAuthenticated ? <OwedAmountsChart/> : <Navigate to="/" replace />} 
+          />
+          <Route 
+          path="/revenue-distribution-over-time" 
+          element={isAuthenticated ? <RevenueDistributionAcrossRoads/> : <Navigate to="/" replace />} 
+          />
+           
           </Routes>
       </div>
     </Router>

@@ -14,7 +14,7 @@ function Homepage() {
   }, [navigate]);
 
   const handleButton1Click = () => {
-    navigate('/notsettled');
+    navigate('/managedebts');
   };
 
   const handleButton2Click = () => {

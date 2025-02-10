@@ -67,7 +67,7 @@ const Login = ({ onLogin }) => {
   return (
     <div className='wrapper'>
       <form onSubmit={handleSubmit}>
-        <h1>Login</h1>
+      <h1 style={{ marginLeft: '60px' }}>Login</h1>
         <div className="input-box">
           <input
             type="text"
