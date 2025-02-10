@@ -3,7 +3,7 @@ const CustomError = require("../errors/customErrors");
 const AsyncHandler = require("express-async-handler");
 
 // Middleware to authenticate the user using JWT token
-const authenticateUser = AsyncHandler(async (req, res, next) => {
+const authenticateAdmin = AsyncHandler(async (req, res, next) => {
   // Get the token from the request headers (x-observatory-auth)
   const token = req.headers["x-observatory-auth"];
 
@@ -20,9 +20,15 @@ const authenticateUser = AsyncHandler(async (req, res, next) => {
     }
   });
 
+  const decodedToken = jwt.decode(token);
+
+  if (decodedToken.username !== "admin") {
+    throw new CustomError.NotAuthorized("Not authorized action");
+  }
+
   // Proceed to the next middleware or route handler if the token is valid
   next();
 });
 
 // Export the middleware function for use in other files
-module.exports = authenticateUser;
+module.exports = authenticateAdmin;

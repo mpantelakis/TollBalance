@@ -8,7 +8,7 @@ const {
   getUsers,
 } = require("../controllers/adminControllers");
 
-const authenticateUser = require("../middleware/userAuthentication");
+const authenticateAdmin = require("../middleware/adminAuthentication");
 
 const multer = require("multer");
 
@@ -16,16 +16,16 @@ const upload = multer({ dest: "back-end/uploads/" });
 
 const adminRouter = Router();
 
-adminRouter.get("/healthcheck", healthCheck);
-adminRouter.post("/resetstations", resetStations);
-adminRouter.post("/resetpasses", resetPasses);
+adminRouter.get("/healthcheck", authenticateAdmin, healthCheck);
+adminRouter.post("/resetstations", authenticateAdmin, resetStations);
+adminRouter.post("/resetpasses", authenticateAdmin, resetPasses);
 adminRouter.post(
   "/addpasses",
-  authenticateUser,
+  authenticateAdmin,
   upload.single("csvFile"),
   addPasses
 );
-adminRouter.post("/usermod", authenticateUser, modifyUser);
-adminRouter.get("/users", authenticateUser, getUsers);
+adminRouter.post("/usermod", authenticateAdmin, modifyUser);
+adminRouter.get("/users", authenticateAdmin, getUsers);
 
 module.exports = adminRouter;
