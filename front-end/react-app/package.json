@@ -9,6 +9,8 @@
     "cra-template": "1.2.0",
     "dayjs": "^1.11.13",
     "highcharts": "^12.1.2",
+    "highcharts-export-data": "^0.1.7",
+    "highcharts-exporting": "^0.1.7",
     "highcharts-react-official": "^3.2.1",
     "jwt-decode": "^4.0.0",
     "react": "^19.0.0",
