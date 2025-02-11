@@ -30,7 +30,7 @@ export default function RevenueDistributionAcrossRoads() {
       console.log("Start Date: ", startDate);
       console.log("End Date: ", endDate);
 
-      const url = `http://localhost:9115/api/revenuedistribution/${id}/${startDate}/${endDate}`;
+      const url = `https://localhost:9115/api/revenuedistribution/${id}/${startDate}/${endDate}`;
 
       console.log("API URL:", url);
 

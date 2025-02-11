@@ -19,7 +19,7 @@ export default function MostPopularTollBooths() {
     try {
       const token = localStorage.getItem("authToken");
       const { id } = JSON.parse(localStorage.getItem("userDetails"));
-      const url = `http://localhost:9115/api/mostpopulartollbooths/${id}`;
+      const url = `https://localhost:9115/api/mostpopulartollbooths/${id}`;
 
       console.log("API URL:", url);
 

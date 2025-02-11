@@ -10,7 +10,7 @@ export default function RoadsPerOperator({ setSelectedRoad }) {
       const { id } = JSON.parse(localStorage.getItem("userDetails"));
 
       try {
-        const url = `http://localhost:9115/api/roadsperoperator/${id}`; // Adjust API endpoint if needed
+        const url = `https://localhost:9115/api/roadsperoperator/${id}`; // Adjust API endpoint if needed
         const response = await fetch(url, {
           headers: {
             "x-observatory-auth": token,

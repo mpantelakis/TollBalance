@@ -15,7 +15,7 @@ const TotalNotSettled = () => {
           return;
         }
 
-        const response = await fetch('http://localhost:9115/api/totalnotsettled', {
+        const response = await fetch('https://localhost:9115/api/totalnotsettled', {
           headers: {
             'x-observatory-auth': token,
           },

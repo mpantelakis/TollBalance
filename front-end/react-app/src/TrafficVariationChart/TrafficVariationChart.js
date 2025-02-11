@@ -30,7 +30,7 @@ export default function TrafficVariationChart() {
       console.log("Start Date: ", startDate);
       console.log("End Date: ", endDate);
 
-      const url = `http://localhost:9115/api/trafficvariation/${id}/${startDate}/${endDate}`;
+      const url = `https://localhost:9115/api/trafficvariation/${id}/${startDate}/${endDate}`;
 
       console.log("API URL: ", url);
 

@@ -24,7 +24,7 @@ export default function OwedAmountsChart() {
       const token = localStorage.getItem("authToken");
       const { id } = JSON.parse(localStorage.getItem("userDetails"));
 
-      const url = `http://localhost:9115/api/owedamountschart/${id}/${startDate}/${endDate}`;
+      const url = `https://localhost:9115/api/owedamountschart/${id}/${startDate}/${endDate}`;
 
       const response = await fetch(url, {
         headers: {

@@ -21,7 +21,7 @@ const NotSettled = () => {
       try {
         const { id } = JSON.parse(localStorage.getItem('userDetails'));
 
-        const debtsResponse = await fetch(`http://localhost:9115/api/notsettled/${id}`, {
+        const debtsResponse = await fetch(`https://localhost:9115/api/notsettled/${id}`, {
           headers: {
             'x-observatory-auth': token,
           },
@@ -40,7 +40,7 @@ const NotSettled = () => {
           setError(errorData.message || 'Failed to fetch unsettled debts.');
         }
 
-        const totalResponse = await fetch(`http://localhost:9115/api/totalnotsettled/${id}`, {
+        const totalResponse = await fetch(`https://localhost:9115/api/totalnotsettled/${id}`, {
           headers: {
             'x-observatory-auth': token,
           },
@@ -74,7 +74,7 @@ const NotSettled = () => {
       const { id: debtorId } = JSON.parse(localStorage.getItem('userDetails'));
 
       const response = await fetch(
-        `http://localhost:9115/api/historydebt/${debtorId}/${creditorId}`,
+        `https://localhost:9115/api/historydebt/${debtorId}/${creditorId}`,
         {
           headers: {
             'x-observatory-auth': token,
@@ -125,7 +125,7 @@ const NotSettled = () => {
       const { id: debtorId } = JSON.parse(localStorage.getItem('userDetails'));
 
       const response = await fetch(
-        `http://localhost:9115/api/settledebt/${debtorId}/${creditorId}`,
+        `https://localhost:9115/api/settledebt/${debtorId}/${creditorId}`,
         {
           method: 'POST',
           headers: {

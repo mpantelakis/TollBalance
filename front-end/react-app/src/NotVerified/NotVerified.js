@@ -23,7 +23,7 @@ const NotVerified = () => {
         const { id } = JSON.parse(localStorage.getItem('userDetails'));
 
         // Fetch unverified payments
-        const paymentsResponse = await fetch(`http://localhost:9115/api/notverified/${id}`, {
+        const paymentsResponse = await fetch(`https://localhost:9115/api/notverified/${id}`, {
           headers: {
             'x-observatory-auth': token,
           },
@@ -39,7 +39,7 @@ const NotVerified = () => {
         }
 
         // Fetch total unverified payments
-        const totalResponse = await fetch(`http://localhost:9115/api/totalnotverified/${id}`, {
+        const totalResponse = await fetch(`https://localhost:9115/api/totalnotverified/${id}`, {
           headers: {
             'x-observatory-auth': token,
           },
@@ -75,7 +75,7 @@ const NotVerified = () => {
       }
 
       const response = await fetch(
-        `http://localhost:9115/api/verifypayment/${creditorId}/${debtorId}`,
+        `https://localhost:9115/api/verifypayment/${creditorId}/${debtorId}`,
         {
           method: 'POST',
           headers: {

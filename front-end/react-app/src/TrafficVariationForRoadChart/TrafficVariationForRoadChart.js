@@ -39,7 +39,7 @@ export default function TrafficVariationForRoadChart() {
       console.log("id: ", id);
       // Ensure the road name is encoded properly
       //const encodedRoad = encodeURIComponent(selectedRoad);
-      const url = `http://localhost:9115/api/trafficvariationperroad/${id}/${selectedRoad}/${startDate}/${endDate}`;
+      const url = `https://localhost:9115/api/trafficvariationperroad/${id}/${selectedRoad}/${startDate}/${endDate}`;
   
       console.log("API URL: ", url);  // Log the full URL being called
   
