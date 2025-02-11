@@ -22,7 +22,7 @@ WITH PassData AS (
 			) THEN 'home'
 			ELSE 'visitor'
 		END AS passType,
-		charge AS passCharge
+		ROUND(charge, 1) AS passCharge
 	FROM toll_passes
 	WHERE toll_id = "NAO03"
 		AND timestamp >= "2022-01-01"
@@ -65,7 +65,7 @@ WITH PassData AS (
         p.toll_id AS stationID,
         p.timestamp,
         p.tag_vehicle_ref_id AS tagID,
-        p.charge AS passCharge
+        ROUND(p.charge, 1) AS passCharge
     FROM toll_passes p
     JOIN toll_stations s
     ON p.toll_id = s.id
