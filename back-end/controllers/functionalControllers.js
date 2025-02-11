@@ -61,7 +61,7 @@ const tollStationPasses = asyncHandler(async (req, res) => {
                     ) THEN 'home'
                     ELSE 'visitor'
                 END AS passType,
-                charge AS passCharge
+                ROUND(charge, 1) AS passCharge
             FROM toll_passes
             WHERE toll_id = ?
                 AND timestamp >= ?
@@ -170,7 +170,7 @@ const passAnalysis = asyncHandler(async (req, res) => {
                 p.toll_id AS stationID,
                 p.timestamp,
                 p.tag_vehicle_ref_id AS tagID,
-                p.charge AS passCharge
+                ROUND(p.charge, 1) AS passCharge
             FROM toll_passes p
             JOIN toll_stations s
             ON p.toll_id = s.id

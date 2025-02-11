@@ -114,13 +114,12 @@ const addPasses = asyncHandler(async (req, res, next) => {
   // Insert each pass into the database
   for (const pass of passes) {
     const { timestamp, tollID, tagHomeID, tagRef, charge } = pass;
-    let parsedDate = parse(timestamp, "MM-dd-yy", new Date()); // Parse the timestamp
-    let formattedDate = format(parsedDate, "yyyy-MM-dd"); // Format the date for DB
+    let parsedDate = parse(timestamp, "yyyy-MM-dd HH:mm", new Date()); // Parse the timestamp
 
     // Insert the toll pass data into the database
     await pool.query(
       "INSERT INTO toll_passes (timestamp,toll_id,tag_operator_id,tag_vehicle_ref_id,charge) VALUES (?, ?, ?, ?,?)",
-      [formattedDate, tollID, tagHomeID, tagRef, charge]
+      [parsedDate, tollID, tagHomeID, tagRef, charge]
     );
   }
 
@@ -258,37 +257,46 @@ const resetPasses = asyncHandler(async (req, res) => {
   res.status(200).json({ status: "OK" });
 });
 
+// Update a user's password
 const modifyUser = asyncHandler(async (req, res) => {
   const { username, password } = req.body;
 
   // Validate input
   if (!username || !password) {
-    throw new CustomError.BadRequest("Username and password are required");
+    throw new CustomError.BadRequest("error");
   }
 
-  // Hash the password
-  const hashedPassword = await bcrypt.hash(password, 10);
+  if (username == "admin") {
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-  // Update the user's password in the database
-  const [result] = await pool.execute(
-    "UPDATE operators SET password = ? WHERE username = ?",
-    [hashedPassword, username]
+    // Update the admin user's password
+    await pool.execute("UPDATE admin SET password = ? WHERE username = ?", [
+      hashedPassword,
+      username,
+    ]);
+
+    return res.status(200).json({ message: "success" });
+  }
+
+  // Check if the user exists in the operators table
+  const [userRows] = await pool.execute(
+    "SELECT username FROM operators WHERE username = ?",
+    [username]
   );
 
-  // Check if the user was successfully updated
-  if (result.affectedRows === 0) {
-    try {
-      await pool.execute(
-        "INSERT INTO admin (username, password) VALUES (?, ?)",
-        [username, hashedPassword]
-      );
-    } catch {
-      throw new CustomError.InternalError("error");
-    }
-  }
+  if (userRows.length > 0) {
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-  // Send a success response
-  res.status(200).json({ message: "success" });
+    // Update the user's password
+    await pool.execute("UPDATE operators SET password = ? WHERE username = ?", [
+      hashedPassword,
+      username,
+    ]);
+
+    return res.status(200).json({ message: "success" });
+  } else throw new CustomError.BadRequest("Invalid username");
 });
 
 const getUsers = asyncHandler(async (req, res) => {

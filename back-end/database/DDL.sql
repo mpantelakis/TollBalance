@@ -79,7 +79,7 @@ CREATE TABLE toll_stations (
 
 CREATE TABLE toll_passes (
   id INT NOT NULL AUTO_INCREMENT,
-  timestamp DATE NOT NULL,
+  timestamp TIMESTAMP NOT NULL,
   toll_id VARCHAR(10) NOT NULL,
   tag_operator_id VARCHAR(4) NOT NULL,
   tag_vehicle_ref_id VARCHAR(20) NOT NULL,
