@@ -2,19 +2,11 @@ import { Command } from "commander";
 import axios from "axios";
 import fs from "fs";
 
-// Custom error class to simulate status codes
-class CustomError extends Error {
-  constructor(statusCode, message) {
-    super(message);
-    this.statusCode = statusCode;
-  }
-}
-
 const command = new Command("tollstationpasses")
   .description("retrieve toll station passes")
   .requiredOption("--station <station>", "Toll Station ID")
-  .requiredOption("--from <from>", "Start date (YYYYMMDD)")
-  .requiredOption("--to <to>", "End date (YYYYMMDD)")
+  .requiredOption("--from <date_from>", "Start date (YYYYMMDD)")
+  .requiredOption("--to <date_to>", "End date (YYYYMMDD)")
   .option("--format <format>", "Output format (json or csv)", "csv")
   .action(async (options) => {
     try {
@@ -22,8 +14,8 @@ const command = new Command("tollstationpasses")
 
       const tokenFilePath = ".auth_token";
       if (!fs.existsSync(tokenFilePath)) {
-        // Throw a 401 Unauthorized error if the token file does not exist
-        throw new CustomError(401, "You are not logged in.");
+        console.error("You are not logged in.");
+        return;
       }
 
       // Read the token from the file
@@ -40,13 +32,26 @@ const command = new Command("tollstationpasses")
         },
       });
 
+      if (response.status === 204) {
+        console.log("No data found");
+        return;
+      }
+
       if (format === "json") {
         console.log(JSON.stringify(response.data, null, 2));
       } else {
         console.log(response.data);
       }
     } catch (error) {
-      console.error("Error:", error.response?.data.info || error.message);
+      // Check if it's a response error
+      if (error.response) {
+        const { status, data } = error.response;
+        // Ensure the error message is printed without extra spaces
+        console.error(`Error ${status}: ${data.info}`);
+      } else {
+        // Catch unexpected errors
+        console.error("Error:", error.message);
+      }
     }
   });
 

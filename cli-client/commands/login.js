@@ -33,7 +33,7 @@ const loginCommand = new Command("login")
 
       console.log("Login successful!");
     } catch (error) {
-      console.error("Login failed:", error.response?.data || error.message);
+      console.error("Login failed:", error.response.data.info);
     }
   });
 
