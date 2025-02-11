@@ -1,12 +1,14 @@
 # Documentation
 
-Ενδεικτικά περιεχόμενα:
+Περιέχει:
 
-- Διαγράμματα UML Activity (in ONE vpp file).
-- Διαγράμματα UML Class (in ONE vpp file).
-- Διαγράμματα UML Component (in ONE vpp file).
-- Διαγράμματα UML Deployment (in ONE vpp file).
-- Διαγράμματα UML Sequence (in ONE vpp file).
-- Διαγράμματα ER.
-- Εγγραφο SRS - Software Requirements Specification.
-- Εγγραφο StRS - Stakeholders Requirements Specification.
+- Διαγράμματα UML Activity.
+- Διάγραμμα UML Class.
+- Διάγραμμα UML Use Case.
+- Διάγραμμα UML Component.
+- Διάγραμμα UML Deployment.
+- Διαγράμματα UML Sequence.
+- Διάγραμμα ER.
+- Διάγραμμα Requirement.
+- Αρχείο .vpp με όλα τα παραπάνω διαγράματα.
+- Έγγραφο SRS - Software Requirements Specification.
