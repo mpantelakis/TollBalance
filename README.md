@@ -89,7 +89,7 @@ npm install
 
 #### 1. Create the `.env` File in the Backend Directory
 
-In the `backend` directory, create a `.env` file.
+In the `back-end` directory, create a `.env` file.
 
 #### 2. Configure the `.env` File with the Following Variables
 
@@ -101,8 +101,6 @@ DB_USER: The username for your database
 DB_PASSWORD: The password for your database
 DB_NAME: The name of the database to use
 JWT_SECRET: A secret key for JWT authentication
-SSL_KEY: The path to the SSL private key
-SSL_CERT: The path to the SSL certificate
 ```
 
 The contents of the .env file should look like the following example:
@@ -116,38 +114,11 @@ DB_NAME=toll_balance
 
 # JWT Secret for Authentication
 JWT_SECRET=
-
-# SSL Configuration
-SSL_KEY=ssl/server.key
-SSL_CERT=ssl/server.cert
 ```
 
 #### 3. Replace Placeholders with the Appropriate Values
 
-- Replace `DB_HOST`, `DB_USER` and `DB_PASSWORD` with your MySQL database connection details.
-- The paths for SSL_KEY and SSL_CERT should be exactly as shown above: ssl/server.key for the SSL private key and ssl/server.cert for the SSL certificate.
-
-### 6. Set up SSL encryption
-
-To enable SSL encryption for secure connections, you'll need to generate self-signed certificates (if you don't already have them) and place them in the `ssl/` folder inside the `backend` directory.
-
-1. **Create the `ssl/` folder inside the `backend` directory**:
-
-```bash
-mkdir back-end/ssl
-```
-
-2. **Generate Self-Signed Certificates (if you don’t have them already):**
-
-```bash
-cd back-end/ssl
-openssl req -nodes -new -x509 -keyout server.key -out server.cert
-```
-
-This command will create the following files in the backend/ssl folder:
-
-- `server.key`: The private key
-- `server.cert`: The self-signed certificate
+Replace `DB_HOST`, `DB_USER` and `DB_PASSWORD` with your MySQL database connection details.
 
 ## Running the Application
 
