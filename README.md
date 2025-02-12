@@ -6,15 +6,17 @@ The TollBalance platform is designed to provide comprehensive solutions for mana
 
 ## Contributors
 
-- **Antigoni Karanika**: Took charge of developing the API for the website and its corresponding documentation.
+### Contributors
 
-- **Giannis Dimoulas**: Focused on all aspects related to the database, primarily handling the queries required for the API endpoints.
+- **Antigoni Karanika**: The architect of the website’s API, Antigoni built a solid and scalable backend for the platform. She also crafted the comprehensive documentation, ensuring the API was both easy to use and well understood.
 
-- **Iliana Maggiori**: Handled the development of the frontend for the software, delivering a dynamic and user-friendly interface.
+- **Giannis Dimoulas**: The database guru, Giannis handled the intricate details of data management, crafting complex queries that powered the API endpoints. His work ensured the platform’s data layer was optimized and highly reliable.
 
-- **Manolis Pantelakis**: Organized and oversaw the project. He was responsible for developing the Functional API endpoints and the CLI, as well as handling both functional API and CLI testing. Additionally, he contributed to the documentation for the Functional API.
+- **Iliana Maggiori**: The creative mastermind behind the frontend, Iliana brought the software to life with a dynamic and intuitive user interface. Her focus was on delivering a seamless user experience, making sure the platform was not only functional but also visually appealing.
 
-The development of the UML diagrams and the SRS document was a collaborative effort.
+- **Manolis Pantelakis**: The driving force behind the project’s organization and oversight. Manolis took charge of developing the functional API endpoints and the CLI, ensuring both were robust and efficient. He also led the testing efforts for both the functional API and CLI, while documenting the entire process with meticulous attention to detail.
+
+The development of the UML diagrams and the SRS document was a true team effort, showcasing our collective commitment to building a solid foundation for the project.
 
 ## Features
 
