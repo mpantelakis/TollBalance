@@ -4,7 +4,7 @@
   "description": "CLI for the softeng project",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest"
   },
   "bin": {
     "se2408": "./index.js"
@@ -16,6 +16,7 @@
   "dependencies": {
     "axios": "^1.7.9",
     "commander": "^12.1.0",
+    "jest": "^29.7.0",
     "jsonwebtoken": "^9.0.2",
     "qs": "^6.13.1"
   }
