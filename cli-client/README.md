@@ -1,7 +1,8 @@
-# CLI client
+# CLI Client
 
-Ενδεικτικά περιεχόμενα:
+## Contents
 
-- Command line interface (CLI).
-- CLI functional tests.
-- CLI unit tests.
+- Command-Line Interface (CLI)
+- Functional Tests
+
+A command-line tool for interacting with the Toll Balance system, including functional tests to ensure reliability.
