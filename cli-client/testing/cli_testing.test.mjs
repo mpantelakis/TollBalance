@@ -2,6 +2,7 @@ import { describe, test, expect, jest } from "@jest/globals";
 import { program } from "commander";
 import fs from "fs";
 import loginCommand from "../commands/login.js";
+import logoutCommand from "../commands/logout.js";
 import healthcheckCommand from "../commands/healthcheck.js";
 import chargesbyCommand from "../commands/chargesby.js";
 import tollstationpassesCommand from "../commands/tollstationpasses.js";
@@ -12,6 +13,7 @@ import resetPassesCommand from "../commands/resetpasses.js";
 import adminCommand from "../commands/admin.js";
 
 program.addCommand(loginCommand);
+program.addCommand(logoutCommand);
 program.addCommand(healthcheckCommand);
 program.addCommand(chargesbyCommand);
 program.addCommand(tollstationpassesCommand);
@@ -130,6 +132,84 @@ describe("Login CLI Tests", () => {
     );
 
     consoleErrorSpy.mockRestore(); // Clean up the spy
+  });
+});
+
+describe("Logout CLI Tests", () => {
+  beforeEach(() => {
+    // Ensure the .auth_token file does not exist before each test
+    if (fs.existsSync(".auth_token")) {
+      fs.unlinkSync(".auth_token");
+    }
+  });
+
+  test("Logout command should show 'You are not logged in' when no token is found or it is expired", async () => {
+    // Spy on console.log to capture messages
+    const consoleLogSpy = jest
+      .spyOn(console, "log")
+      .mockImplementation(() => {});
+
+    // Simulate CLI args for the logout command when the user is not logged in
+    const args = [
+      "node",
+      "se2408",
+      "logout", // The logout command
+    ];
+
+    // Run the CLI command with the arguments
+    await program.parseAsync(args); // This will execute the command
+
+    // Check if the correct message is logged when no token exists
+    expect(consoleLogSpy).toHaveBeenCalledWith("You are not logged in.");
+
+    consoleLogSpy.mockClear();
+  });
+
+  test("Logout command should log out successfully if the user is logged in", async () => {
+    // Spy on console.log to capture messages
+    const consoleLogSpy = jest
+      .spyOn(console, "log")
+      .mockImplementation(() => {});
+
+    const username = "egnatia";
+    const password = "password";
+
+    // Simulate CLI args
+    const loginArgs = [
+      "node", // Pretend to run via Node
+      "se2408", // The CLI name
+      "login", // The login command
+      "--username",
+      username, // The username option
+      "--passwd",
+      password, // The password option
+    ];
+
+    // Run the CLI command with the arguments
+    await program.parseAsync(loginArgs); // This will execute the command
+
+    // Check if the .auth_token file was created
+    expect(fs.existsSync(".auth_token")).toBe(true);
+
+    consoleLogSpy.mockClear();
+
+    // Simulate CLI args for the logout command when the user is logged in
+    const args = [
+      "node",
+      "se2408",
+      "logout", // The logout command
+    ];
+
+    // Run the CLI command with the arguments
+    await program.parseAsync(args); // This will execute the command
+
+    // Check if the .auth_token file was deleted (indicating successful logout)
+    expect(fs.existsSync(".auth_token")).toBe(false);
+
+    // Check if the success message was logged
+    expect(consoleLogSpy).toHaveBeenCalledWith("Logged out successfully!");
+
+    consoleLogSpy.mockClear();
   });
 });
 
@@ -2091,5 +2171,9 @@ describe("Reset Stations, Passes CLI Tests", () => {
     // Ensure the output structure is correct
     expect(consoleLogSpy).toHaveBeenCalledWith("OK");
     consoleLogSpy.mockRestore();
+
+    if (fs.existsSync(tokenFilePath)) {
+      fs.unlinkSync(tokenFilePath);
+    }
   });
 });

@@ -33,7 +33,7 @@ const logoutCommand = new Command("logout")
       console.log("Logged out successfully!");
     } catch (error) {
       if (error.response?.status === 401) {
-        console.log("You are not logged in or your session has expired.");
+        console.log("You are not logged in or your token has expired.");
       } else {
         console.error(
           "An error occurred during logout:",
