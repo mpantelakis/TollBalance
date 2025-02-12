@@ -1,4 +1,3 @@
-import { describe, test, expect, jest } from "@jest/globals";
 import { program } from "commander";
 import fs from "fs";
 import loginCommand from "../commands/login.js";
