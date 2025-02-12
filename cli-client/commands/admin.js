@@ -56,7 +56,7 @@ const adminCommand = new Command("admin")
           headers,
           httpsAgent: agent,
         });
-        console.log(response.data.map((user) => user.username));
+        console.log(response.data.usernames);
       } else if (options.addpasses) {
         if (!options.source) {
           console.error(

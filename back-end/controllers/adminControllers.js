@@ -301,13 +301,16 @@ const modifyUser = asyncHandler(async (req, res) => {
 
 const getUsers = asyncHandler(async (req, res) => {
   const [users] = await pool.execute("SELECT username FROM operators;");
-  if (users.length == 0) {
+  if (users.length === 0) {
     throw new CustomError.NoContent(
       "There are no registered users in the system!"
     );
   }
 
-  res.status(200).json(users);
+  // Transform the response into an object with "usernames" as the key
+  const usersObject = { usernames: users.map((user) => user.username) };
+
+  res.status(200).json(usersObject);
 });
 
 module.exports = {
