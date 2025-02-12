@@ -4,7 +4,7 @@
   "description": "CLI for the softeng project",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest"
   },
   "bin": {
     "se2408": "./index.js"
