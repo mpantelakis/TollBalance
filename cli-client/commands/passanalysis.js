@@ -1,6 +1,7 @@
 import { Command } from "commander";
 import axios from "axios";
 import fs from "fs";
+import https from "https";
 
 const command = new Command("passanalysis")
   .description("retrieve pass analysis data")
@@ -22,6 +23,10 @@ const command = new Command("passanalysis")
       // Read the token from the file
       const token = fs.readFileSync(tokenFilePath, "utf-8").trim();
 
+      const agent = new https.Agent({
+        rejectUnauthorized: false, // Ignore self-signed cert
+      });
+
       // Construct the URL with the parameters
       const url = `https://localhost:9115/api/passAnalysis/${stationop}/${tagop}/${from}/${to}`;
 
@@ -31,6 +36,7 @@ const command = new Command("passanalysis")
         headers: {
           "X-OBSERVATORY-AUTH": token, // Include the token in the header
         },
+        httpsAgent: agent,
       });
 
       if (response.status === 204) {

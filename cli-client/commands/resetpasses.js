@@ -1,6 +1,7 @@
 import { Command } from "commander";
 import axios from "axios";
 import fs from "fs";
+import https from "https";
 
 const command = new Command("resetpasses")
   .description("reset the toll passes data in the system")
@@ -15,6 +16,10 @@ const command = new Command("resetpasses")
       // Read the token from the file
       const token = fs.readFileSync(tokenFilePath, "utf-8").trim();
 
+      const agent = new https.Agent({
+        rejectUnauthorized: false, // Ignore self-signed cert
+      });
+
       // Construct the headers with the token
       const headers = {
         "X-OBSERVATORY-AUTH": token,
@@ -27,6 +32,7 @@ const command = new Command("resetpasses")
           headers: {
             "x-observatory-auth": token, // Include the token in the header
           },
+          httpsAgent: agent,
         }
       );
 

@@ -1,6 +1,7 @@
 import { Command } from "commander";
 import axios from "axios";
 import fs from "fs";
+import https from "https";
 
 const command = new Command("resetstations")
   .description("reset the toll stations data in the system")
@@ -15,6 +16,10 @@ const command = new Command("resetstations")
       // Read the token from the file
       const token = fs.readFileSync(tokenFilePath, "utf-8").trim();
 
+      const agent = new https.Agent({
+        rejectUnauthorized: false, // Ignore self-signed cert
+      });
+
       const response = await axios.post(
         "https://localhost:9115/api/admin/resetstations",
         {},
@@ -22,6 +27,7 @@ const command = new Command("resetstations")
           headers: {
             "x-observatory-auth": token, // Include the token in the header
           },
+          httpsAgent: agent,
         }
       );
 

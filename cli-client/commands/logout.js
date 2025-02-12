@@ -1,6 +1,7 @@
 import { Command } from "commander";
 import fs from "fs";
 import axios from "axios";
+import https from "https";
 
 const API_BASE_URL = "https://localhost:9115/api";
 
@@ -17,6 +18,10 @@ const logoutCommand = new Command("logout")
       // Read the token from the file
       const token = fs.readFileSync(".auth_token", "utf-8").trim();
 
+      const agent = new https.Agent({
+        rejectUnauthorized: false, // Ignore self-signed cert
+      });
+
       // Call the API endpoint to log out
       const response = await axios.post(
         `${API_BASE_URL}/logout`,
@@ -25,6 +30,7 @@ const logoutCommand = new Command("logout")
           headers: {
             "X-OBSERVATORY-AUTH": token,
           },
+          httpsAgent: agent,
         }
       );
 

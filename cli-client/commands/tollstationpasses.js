@@ -1,6 +1,7 @@
 import { Command } from "commander";
 import axios from "axios";
 import fs from "fs";
+import https from "https";
 
 const command = new Command("tollstationpasses")
   .description("retrieve toll station passes")
@@ -21,6 +22,10 @@ const command = new Command("tollstationpasses")
       // Read the token from the file
       const token = fs.readFileSync(tokenFilePath, "utf-8").trim();
 
+      const agent = new https.Agent({
+        rejectUnauthorized: false, // Ignore self-signed cert
+      });
+
       // Construct the URL with the parameters
       const url = `https://localhost:9115/api/tollStationPasses/${station}/${from}/${to}`;
 
@@ -30,6 +35,7 @@ const command = new Command("tollstationpasses")
         headers: {
           "X-OBSERVATORY-AUTH": token, // Include the token in the header
         },
+        httpsAgent: agent,
       });
 
       if (response.status === 204) {
