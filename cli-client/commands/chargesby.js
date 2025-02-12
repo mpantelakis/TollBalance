@@ -1,7 +1,6 @@
 import { Command } from "commander";
 import axios from "axios";
 import fs from "fs";
-import https from "https";
 
 const command = new Command("chargesby")
   .description("retrieve charges by toll operator")
@@ -22,12 +21,8 @@ const command = new Command("chargesby")
       // Read the token from the file
       const token = fs.readFileSync(tokenFilePath, "utf-8").trim();
 
-      const agent = new https.Agent({
-        rejectUnauthorized: false, // Ignore self-signed cert
-      });
-
       // Construct the URL with the parameters
-      const url = `https://localhost:9115/api/chargesBy/${opid}/${from}/${to}`;
+      const url = `http://localhost:9115/api/chargesBy/${opid}/${from}/${to}`;
 
       // Make the API call
       const response = await axios.get(url, {
@@ -35,7 +30,6 @@ const command = new Command("chargesby")
         headers: {
           "x-observatory-auth": token, // Include the token in the header
         },
-        httpsAgent: agent,
       });
 
       if (response.status === 204) {

@@ -1,28 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import styles from './Login.css'; 
+import React, { useState, useEffect } from "react";
+import styles from "./Login.css";
 import { FaUser, FaLock } from "react-icons/fa";
-import { useNavigate } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode';
-
+import { useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 
 const Login = ({ onLogin }) => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem("authToken");
     if (token) {
       try {
         const decodedToken = jwtDecode(token);
         if (decodedToken.exp * 1000 > Date.now()) {
           // Only redirect if you're at login page and the token is valid
-          navigate('/homepage', { replace: true });
+          navigate("/homepage", { replace: true });
         }
       } catch (error) {
-        console.error('Invalid token:', error);
+        console.error("Invalid token:", error);
       }
     }
   }, [navigate]);
@@ -30,13 +29,13 @@ const Login = ({ onLogin }) => {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    setErrorMessage('');
-    setSuccessMessage('');
+    setErrorMessage("");
+    setSuccessMessage("");
 
     try {
-      const response = await fetch('https://localhost:9115/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("http://localhost:9115/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
 
@@ -46,28 +45,28 @@ const Login = ({ onLogin }) => {
 
         // Decode the token
         const decodedToken = jwtDecode(token);
-        console.log('Decoded Token:', decodedToken);
+        console.log("Decoded Token:", decodedToken);
 
         // Store the token and user details in localStorage
-        localStorage.setItem('authToken', token);
-        localStorage.setItem('userDetails', JSON.stringify(decodedToken));
+        localStorage.setItem("authToken", token);
+        localStorage.setItem("userDetails", JSON.stringify(decodedToken));
 
-        setSuccessMessage('Login successful!');
+        setSuccessMessage("Login successful!");
         onLogin(); // Notify parent component
-        navigate('/homepage', { replace: true }); // Redirect and replace history
+        navigate("/homepage", { replace: true }); // Redirect and replace history
       } else {
         const errorData = await response.json();
-        setErrorMessage(errorData.message || 'Login failed. Please try again.');
+        setErrorMessage(errorData.message || "Login failed. Please try again.");
       }
     } catch (error) {
-      setErrorMessage('An error occurred. Please try again.');
+      setErrorMessage("An error occurred. Please try again.");
     }
   };
 
   return (
-    <div className='wrapper'>
+    <div className="wrapper">
       <form onSubmit={handleSubmit}>
-      <h1 style={{ marginLeft: '60px' }}>Login</h1>
+        <h1 style={{ marginLeft: "60px" }}>Login</h1>
         <div className="input-box">
           <input
             type="text"
@@ -76,7 +75,7 @@ const Login = ({ onLogin }) => {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
           />
-          <FaUser className='icon'/>
+          <FaUser className="icon" />
         </div>
         <div className="input-box">
           <input
@@ -86,10 +85,12 @@ const Login = ({ onLogin }) => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <FaLock className='icon'/>
+          <FaLock className="icon" />
         </div>
         <button type="submit">Login</button>
-        {successMessage && <div className={styles.success}>{successMessage}</div>}
+        {successMessage && (
+          <div className={styles.success}>{successMessage}</div>
+        )}
         {errorMessage && <div className={styles.error}>{errorMessage}</div>}
       </form>
     </div>

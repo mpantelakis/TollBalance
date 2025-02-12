@@ -1,7 +1,6 @@
 import { Command } from "commander";
 import axios from "axios";
 import fs from "fs";
-import https from "https";
 
 const command = new Command("healthcheck")
   .description("Check if the server connection is established")
@@ -16,18 +15,13 @@ const command = new Command("healthcheck")
       // Read the token from the file
       const token = fs.readFileSync(tokenFilePath, "utf-8").trim();
 
-      const agent = new https.Agent({
-        rejectUnauthorized: false, // Ignore self-signed cert
-      });
-
       // Make the request with the token in the X-OBSERVATORY-AUTH header
       const response = await axios.get(
-        "https://localhost:9115/api/admin/healthcheck",
+        "http://localhost:9115/api/admin/healthcheck",
         {
           headers: {
             "X-OBSERVATORY-AUTH": token, // Pass the token here
           },
-          httpsAgent: agent,
         }
       );
 

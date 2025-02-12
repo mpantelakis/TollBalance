@@ -1,9 +1,9 @@
-import React, { useState, useRef } from 'react';
-import Highcharts from 'highcharts';
-import HighchartsReact from 'highcharts-react-official';
-import DateCalendarViews from '../DateCalendarViews/DateCalendarViews.js';
-import ChooseDiagramButton from '../ChooseDiagramButton/ChooseDiagramButton.js';
-import Download from '../DownloadButton/DownloadButton.js';
+import React, { useState, useRef } from "react";
+import Highcharts from "highcharts";
+import HighchartsReact from "highcharts-react-official";
+import DateCalendarViews from "../DateCalendarViews/DateCalendarViews.js";
+import ChooseDiagramButton from "../ChooseDiagramButton/ChooseDiagramButton.js";
+import Download from "../DownloadButton/DownloadButton.js";
 
 export default function TrafficDistributionAcrossRoads() {
   const [startDate, setStartDate] = useState(null);
@@ -28,8 +28,8 @@ export default function TrafficDistributionAcrossRoads() {
       console.log("Connected company id: ", id);
       console.log("Start Date: ", startDate);
       console.log("End Date: ", endDate);
-      
-      const url = `https://localhost:9115/api/trafficdistribution/${id}/${startDate}/${endDate}`;
+
+      const url = `http://localhost:9115/api/trafficdistribution/${id}/${startDate}/${endDate}`;
 
       console.log("API URL:", url);
 
@@ -55,25 +55,28 @@ export default function TrafficDistributionAcrossRoads() {
       }));
 
       setChartOptions({
-        chart: { type: 'pie' },
-        title: { text: 'Traffic Distribution Across Roads' },
-        tooltip: { pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>' },
+        chart: { type: "pie" },
+        title: { text: "Traffic Distribution Across Roads" },
+        tooltip: {
+          pointFormat: "{series.name}: <b>{point.percentage:.1f}%</b>",
+        },
         accessibility: {
-          point: { valueSuffix: '%' },
+          point: { valueSuffix: "%" },
         },
         plotOptions: {
           pie: {
             allowPointSelect: true,
-            cursor: 'pointer',
+            cursor: "pointer",
             dataLabels: {
               enabled: true,
-              format: '{point.name}: {point.y}',
+              format: "{point.name}: {point.y}",
             },
           },
         },
-        series: [{ name: 'Toll Passes', colorByPoint: true, data: formattedData }],
+        series: [
+          { name: "Toll Passes", colorByPoint: true, data: formattedData },
+        ],
       });
-
     } catch (err) {
       setError(err.message);
       console.log("Error in fetchTrafficData:", err.message);
@@ -86,10 +89,12 @@ export default function TrafficDistributionAcrossRoads() {
       <h2>Traffic Distribution Across Roads</h2>
 
       {/* Date Selection */}
-      <DateCalendarViews onDateChange={(start, end) => {
-        setStartDate(start);
-        setEndDate(end);
-      }} />
+      <DateCalendarViews
+        onDateChange={(start, end) => {
+          setStartDate(start);
+          setEndDate(end);
+        }}
+      />
 
       {/* Generate Chart Button */}
       <button onClick={fetchTrafficData} disabled={!startDate || !endDate}>
@@ -97,13 +102,20 @@ export default function TrafficDistributionAcrossRoads() {
       </button>
 
       {/* Error message */}
-      {error && <div style={{ color: 'red' }}>{error}</div>}
+      {error && <div style={{ color: "red" }}>{error}</div>}
 
       {/* Display Chart if data is available */}
       {chartOptions && (
         <div>
-          <HighchartsReact ref={chartRef} highcharts={Highcharts} options={chartOptions} />
-          <Download chartRef={chartRef} filename="traffic_distribution_across_roads" />
+          <HighchartsReact
+            ref={chartRef}
+            highcharts={Highcharts}
+            options={chartOptions}
+          />
+          <Download
+            chartRef={chartRef}
+            filename="traffic_distribution_across_roads"
+          />
         </div>
       )}
     </div>

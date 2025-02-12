@@ -1,35 +1,38 @@
-import React, { useEffect, useState } from 'react';
-import './TotalNotSettled.css';
+import React, { useEffect, useState } from "react";
+import "./TotalNotSettled.css";
 
 const TotalNotSettled = () => {
   const [totalDebts, setTotalDebts] = useState(null);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchTotalDebts = async () => {
       try {
-        const token = localStorage.getItem('authToken');
+        const token = localStorage.getItem("authToken");
         if (!token) {
-          setError('You are not authorized.');
+          setError("You are not authorized.");
           return;
         }
 
-        const response = await fetch('https://localhost:9115/api/totalnotsettled', {
-          headers: {
-            'x-observatory-auth': token,
-          },
-        });
+        const response = await fetch(
+          "http://localhost:9115/api/totalnotsettled",
+          {
+            headers: {
+              "x-observatory-auth": token,
+            },
+          }
+        );
 
         if (response.ok) {
           const data = await response.json();
           setTotalDebts(data[0].totalOwed); // Assuming data is [{ totalOwed: 250.5 }]
         } else {
           const errorData = await response.json();
-          setError(errorData.message || 'Failed to fetch total debts.');
+          setError(errorData.message || "Failed to fetch total debts.");
         }
       } catch (err) {
-        setError('An error occurred while fetching total debts.');
+        setError("An error occurred while fetching total debts.");
       } finally {
         setLoading(false);
       }

@@ -2,9 +2,8 @@ import { Command } from "commander";
 import axios from "axios";
 import FormData from "form-data";
 import fs from "fs";
-import https from "https";
 
-const API_BASE_URL = "https://localhost:9115/api";
+const API_BASE_URL = "http://localhost:9115/api";
 
 const adminCommand = new Command("admin")
   .description("administrative commands for the application")
@@ -25,10 +24,6 @@ const adminCommand = new Command("admin")
       // Read the token from the file
       const token = fs.readFileSync(tokenFilePath, "utf-8").trim();
 
-      const agent = new https.Agent({
-        rejectUnauthorized: false, // Ignore self-signed cert
-      });
-
       // Construct the headers with the token
       const headers = {
         "X-OBSERVATORY-AUTH": token,
@@ -48,13 +43,12 @@ const adminCommand = new Command("admin")
             username: options.username,
             password: options.passw,
           },
-          { headers, httpsAgent: agent }
+          { headers }
         );
         console.log(response.data.message || response.data.info);
       } else if (options.users) {
         const response = await axios.get(`${API_BASE_URL}/admin/users`, {
           headers,
-          httpsAgent: agent,
         });
         console.log(response.data.usernames);
       } else if (options.addpasses) {
@@ -83,7 +77,6 @@ const adminCommand = new Command("admin")
               ...formData.getHeaders(),
               ...headers,
             },
-            httpsAgent: agent,
           }
         );
 

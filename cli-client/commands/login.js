@@ -2,9 +2,8 @@ import { Command } from "commander";
 import axios from "axios";
 import qs from "qs";
 import fs from "fs";
-import https from "https";
 
-const API_BASE_URL = "https://localhost:9115/api";
+const API_BASE_URL = "http://localhost:9115/api";
 
 const loginCommand = new Command("login")
   .description("Authenticate and log in to the system")
@@ -20,16 +19,11 @@ const loginCommand = new Command("login")
         password: passwd,
       });
 
-      const agent = new https.Agent({
-        rejectUnauthorized: false, // Ignore self-signed cert
-      });
-
       // Αποστολή αιτήματος POST στο API
       const response = await axios.post(`${API_BASE_URL}/login`, data, {
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
         },
-        httpsAgent: agent,
       });
 
       const { token } = response.data;
