@@ -24,7 +24,7 @@ const fetchDebtData = async () => {
       const token = localStorage.getItem("authToken");
       const { id } = JSON.parse(localStorage.getItem("userDetails"));
       
-      const url = `http://localhost:9115/api/debthistorychart/${id}/${startDate}/${endDate}`;
+      const url = `https://localhost:9115/api/debthistorychart/${id}/${startDate}/${endDate}`;
   
       const response = await fetch(url, {
         headers: {

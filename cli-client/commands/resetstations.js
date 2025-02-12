@@ -16,7 +16,7 @@ const command = new Command("resetstations")
       const token = fs.readFileSync(tokenFilePath, "utf-8").trim();
 
       const response = await axios.post(
-        "http://localhost:9115/api/admin/resetstations",
+        "https://localhost:9115/api/admin/resetstations",
         {},
         {
           headers: {

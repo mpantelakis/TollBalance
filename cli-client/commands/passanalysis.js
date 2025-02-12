@@ -23,7 +23,7 @@ const command = new Command("passanalysis")
       const token = fs.readFileSync(tokenFilePath, "utf-8").trim();
 
       // Construct the URL with the parameters
-      const url = `http://localhost:9115/api/passAnalysis/${stationop}/${tagop}/${from}/${to}`;
+      const url = `https://localhost:9115/api/passAnalysis/${stationop}/${tagop}/${from}/${to}`;
 
       // Make the API call
       const response = await axios.get(url, {

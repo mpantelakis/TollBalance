@@ -3,7 +3,7 @@ import axios from "axios";
 import FormData from "form-data";
 import fs from "fs";
 
-const API_BASE_URL = "http://localhost:9115/api";
+const API_BASE_URL = "https://localhost:9115/api";
 
 const adminCommand = new Command("admin")
   .description("administrative commands for the application")

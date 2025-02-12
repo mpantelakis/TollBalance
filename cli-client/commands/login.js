@@ -3,7 +3,7 @@ import axios from "axios";
 import qs from "qs";
 import fs from "fs";
 
-const API_BASE_URL = "http://localhost:9115/api";
+const API_BASE_URL = "https://localhost:9115/api";
 
 const loginCommand = new Command("login")
   .description("Authenticate and log in to the system")

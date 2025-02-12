@@ -17,7 +17,7 @@ const command = new Command("healthcheck")
 
       // Make the request with the token in the X-OBSERVATORY-AUTH header
       const response = await axios.get(
-        "http://localhost:9115/api/admin/healthcheck",
+        "https://localhost:9115/api/admin/healthcheck",
         {
           headers: {
             "X-OBSERVATORY-AUTH": token, // Pass the token here

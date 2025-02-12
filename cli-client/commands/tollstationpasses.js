@@ -22,7 +22,7 @@ const command = new Command("tollstationpasses")
       const token = fs.readFileSync(tokenFilePath, "utf-8").trim();
 
       // Construct the URL with the parameters
-      const url = `http://localhost:9115/api/tollStationPasses/${station}/${from}/${to}`;
+      const url = `https://localhost:9115/api/tollStationPasses/${station}/${from}/${to}`;
 
       // Make the API call
       const response = await axios.get(url, {

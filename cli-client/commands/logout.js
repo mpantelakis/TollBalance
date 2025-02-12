@@ -2,7 +2,7 @@ import { Command } from "commander";
 import fs from "fs";
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:9115/api";
+const API_BASE_URL = "https://localhost:9115/api";
 
 const logoutCommand = new Command("logout")
   .description("Log out from the system")

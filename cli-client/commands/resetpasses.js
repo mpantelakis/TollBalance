@@ -21,7 +21,7 @@ const command = new Command("resetpasses")
       };
 
       const response = await axios.post(
-        "http://localhost:9115/api/admin/resetpasses",
+        "https://localhost:9115/api/admin/resetpasses",
         {}, // No body needed, just an empty object
         {
           headers: {

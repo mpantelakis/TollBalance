@@ -22,7 +22,7 @@ const command = new Command("chargesby")
       const token = fs.readFileSync(tokenFilePath, "utf-8").trim();
 
       // Construct the URL with the parameters
-      const url = `http://localhost:9115/api/chargesBy/${opid}/${from}/${to}`;
+      const url = `https://localhost:9115/api/chargesBy/${opid}/${from}/${to}`;
 
       // Make the API call
       const response = await axios.get(url, {
