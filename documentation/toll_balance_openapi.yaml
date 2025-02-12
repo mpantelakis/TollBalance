@@ -1,0 +1,711 @@
+openapi: 3.0.0
+info:
+  title: Toll Ballance REST API
+  description: The **Toll Balance API** provides a set of endpoints designed for managing
+    and monitoring toll station data, toll passes, and user accounts. It enables the
+    addition and analysis of toll pass information, resetting of toll stations and
+    passes, and user management for the toll operation system. The API also includes
+    health check functionality to ensure that the system is running smoothly and that
+    the database connection is operational.
+  version: 1.0.0
+servers:
+- url: '{{baseURL}}'
+paths:
+  /admin/healthcheck:
+    get:
+      summary: healthcheck
+      description: This endpoint performs a health check on the system by verifying
+        the database connection and counting records related to toll stations, distinct
+        tag references, and toll passes in the database.
+      parameters:
+      - name: X-OBSERVATORY-AUTH
+        in: header
+        required: true
+        schema:
+          type: string
+        description: The X-OBSERVATORY-AUTH header is used for authentication. Clients
+          must provide a valid authentication token in the X-OBSERVATORY-AUTH header
+          when making requests to endpoints that require authentication.
+      requestBody: {}
+      responses:
+        '200':
+          description: Successfull Call
+          content:
+            application/json:
+              example:
+                status: OK
+                dbconnection: mysql://root:****@localhost/toll_balance
+                n_stations: 253
+                n_tags: 50
+                n_passes: 2002
+        '401':
+          description: Connection Failure
+          content:
+            application/json:
+              example:
+                status: failed
+                dbconnection: mysql://root:****@localhost/toll_balance
+      security:
+      - X-OBSERVATORY-AUTH: []
+  /admin/addpasses:
+    post:
+      summary: addpasses
+      description: This endpoint allows you to add toll passes to the system by uploading
+        a CSV file.
+      parameters:
+      - name: X-OBSERVATORY-AUTH
+        in: header
+        required: true
+        schema:
+          type: string
+        description: The X-OBSERVATORY-AUTH header is used for authentication. Clients
+          must provide a valid authentication token in the X-OBSERVATORY-AUTH header
+          when making requests to endpoints that require authentication.
+      requestBody: {}
+      responses:
+        '200':
+          description: Successful Call
+          content:
+            application/json:
+              example:
+                status: OK
+        '400':
+          description: Bad Request by Not Providing a CSV File
+          content:
+            application/json:
+              example:
+                status: failed
+                info: The file is not a valid CSV file.
+      security:
+      - X-OBSERVATORY-AUTH: []
+  /admin/resetpasses:
+    post:
+      summary: resetpasses
+      description: This endpoint resets all toll passes in the database. It also updates
+        the `admin` password to a default value.
+      parameters:
+      - name: X-OBSERVATORY-AUTH
+        in: header
+        required: true
+        schema:
+          type: string
+        description: The X-OBSERVATORY-AUTH header is used for authentication. Clients
+          must provide a valid authentication token in the X-OBSERVATORY-AUTH header
+          when making requests to endpoints that require authentication.
+      requestBody: {}
+      responses: {}
+      security:
+      - X-OBSERVATORY-AUTH: []
+  /admin/resetstations:
+    post:
+      summary: resetstations
+      description: This endpoint resets the toll stations by loading new data from
+        a CSV file located at `../files/tollstations2024.csv`.
+      parameters:
+      - name: X-OBSERVATORY-AUTH
+        in: header
+        required: true
+        schema:
+          type: string
+        description: The X-OBSERVATORY-AUTH header is used for authentication. Clients
+          must provide a valid authentication token in the X-OBSERVATORY-AUTH header
+          when making requests to endpoints that require authentication.
+      requestBody: {}
+      responses: {}
+      security:
+      - X-OBSERVATORY-AUTH: []
+  /admin/usermod:
+    post:
+      summary: Modify User
+      description: This endpoint updates a user's password. If the username is invalid,
+        it returns an error.
+      parameters:
+      - name: X-OBSERVATORY-AUTH
+        in: header
+        required: true
+        schema:
+          type: string
+        description: The X-OBSERVATORY-AUTH header is used for authentication. Clients
+          must provide a valid authentication token in the X-OBSERVATORY-AUTH header
+          when making requests to endpoints that require authentication.
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses: {}
+      security:
+      - X-OBSERVATORY-AUTH: []
+  /admin/users:
+    get:
+      summary: Get Users
+      description: Retrieves a list of all registered operators in the system. If
+        no users are found, it returns "No Content" ; otherwise, it responds with
+        a list of usernames.
+      parameters:
+      - name: X-OBSERVATORY-AUTH
+        in: header
+        required: true
+        schema:
+          type: string
+        description: The X-OBSERVATORY-AUTH header is used for authentication. Clients
+          must provide a valid authentication token in the X-OBSERVATORY-AUTH header
+          when making requests to endpoints that require authentication.
+      requestBody: {}
+      responses: {}
+      security:
+      - X-OBSERVATORY-AUTH: []
+  /login:
+    post:
+      summary: login
+      description: This endpoint logs in a user by verifying the provided username
+        and password. If the credentials are valid, a JWT token is generated and returned.
+      parameters: []
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Successful Login
+          content:
+            application/json:
+              example:
+                token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IkVHIiwidXNlcm5hbWUiOiJlZ25hdGlhIiwiaWF0IjoxNzM5MTM1MzYzLCJleHAiOjE3MzkxNDI1NjN9.kvBeY7lQyHebIG5ghlQFdfW6xlnpdnPdtuwNZVx2zY0
+        '400':
+          description: Bad Request by Not Providing Password
+          content:
+            application/json:
+              example:
+                status: failed
+                info: Credentials are required
+        '401':
+          description: Not Authorized by Providing Incorrect Password
+          content:
+            application/json:
+              example:
+                status: failed
+                info: Invalid credentials
+      security:
+      - X-OBSERVATORY-AUTH: []
+  /logout:
+    post:
+      summary: logout
+      description: This endpoint logs out the user by simply sending a confirmation
+        response (status `200`). The JWT token sent with the request is invalidated
+        on the client-side.
+      parameters:
+      - name: X-OBSERVATORY-AUTH
+        in: header
+        required: true
+        schema:
+          type: string
+        description: The X-OBSERVATORY-AUTH header is used for authentication. Clients
+          must provide a valid authentication token in the X-OBSERVATORY-AUTH header
+          when making requests to endpoints that require authentication.
+      requestBody: {}
+      responses: {}
+      security:
+      - X-OBSERVATORY-AUTH: []
+  /tollStationPasses/:tollStationID/:date_from/:date_to:
+    get:
+      summary: tollStationPasses
+      description: This endpoint retrieves the toll station passes for a specific
+        toll station within a given date range. It requires the `tollStationID`, `date_from`,
+        and `date_to` parameters to filter the results.
+      parameters:
+      - name: X-OBSERVATORY-AUTH
+        in: header
+        required: true
+        schema:
+          type: string
+        description: The X-OBSERVATORY-AUTH header is used for authentication. Clients
+          must provide a valid authentication token in the X-OBSERVATORY-AUTH header
+          when making requests to endpoints that require authentication.
+      requestBody: {}
+      responses:
+        '200':
+          description: Successful Call Using CSV Format
+          content:
+            application/json:
+              example: '"stationID","stationOperator","requestTimestamp","periodFrom","periodTo","nPasses","passList"
+
+                "EG45","egnatia","2025-02-10 00:23","2022-01-01","2022-12-31",2,"[{""tagID"":""AMLJH75LX"",""passID"":1152,""passType"":""visitor"",""passIndex"":2,""timestamp"":""2022-05-02
+                00:00"",""passCharge"":0.30000001192092896,""tagProvider"":""OO""},{""tagID"":""NAOLY8OZCY"",""passID"":1076,""passType"":""home"",""passIndex"":1,""timestamp"":""2022-12-11
+                00:00"",""passCharge"":0.20000000298023224,""tagProvider"":""EG""}]"'
+        '400':
+          description: Bad Request by Providing Invalid Date
+          content:
+            application/json:
+              example:
+                status: failed
+                info: Invalid 'date_from' parameter. It should be in YYYYMMDD format.
+        '204':
+          description: No Content by Providing non-existent tollStationID
+          content:
+            application/json:
+              example: null
+      security:
+      - X-OBSERVATORY-AUTH: []
+  /passAnalysis/:stationOpID/:tagOpID/:date_from/:date_to:
+    get:
+      summary: passAnalysis
+      description: This endpoint analyzes passes for a specific toll station operator
+        and tag operator within a given date range. It requires `stationOpID`, `tagOpID`,
+        `date_from`, and `date_to` parameters to filter the results.
+      parameters:
+      - name: X-OBSERVATORY-AUTH
+        in: header
+        required: true
+        schema:
+          type: string
+        description: The X-OBSERVATORY-AUTH header is used for authentication. Clients
+          must provide a valid authentication token in the X-OBSERVATORY-AUTH header
+          when making requests to endpoints that require authentication.
+      requestBody: {}
+      responses:
+        '200':
+          description: Successful Call Using CSV Format
+          content:
+            application/json:
+              example: '"stationOpID","tagOpID","requestTimestamp","periodFrom","periodTo","nPasses","passList"
+
+                "NAO","EG","2025-02-10 00:25","2022-01-01","2022-12-31",44,"[{""tagID"":""EG9CHJ755"",""passID"":35,""passIndex"":2,""stationID"":""NAO03"",""timestamp"":""2022-01-01
+                00:00"",""passCharge"":2.5},{""tagID"":""EG7UR23GD"",""passID"":31,""passIndex"":1,""stationID"":""NAO32"",""timestamp"":""2022-01-01
+                00:00"",""passCharge"":2.5},{""tagID"":""EGRHOCN9J"",""passID"":40,""passIndex"":3,""stationID"":""NAO40"",""timestamp"":""2022-01-01
+                00:00"",""passCharge"":2.5},{""tagID"":""EG9CHJ755"",""passID"":66,""passIndex"":4,""stationID"":""NAO23"",""timestamp"":""2022-01-02
+                00:00"",""passCharge"":2.5},{""tagID"":""EGUT0CVS4"",""passID"":88,""passIndex"":5,""stationID"":""NAO05"",""timestamp"":""2022-01-02
+                00:00"",""passCharge"":2.5},{""tagID"":""EGSEIMVIH"",""passID"":155,""passIndex"":6,""stationID"":""NAO10"",""timestamp"":""2022-01-03
+                00:00"",""passCharge"":2.5},{""tagID"":""EGVWPVS7H"",""passID"":173,""passIndex"":7,""stationID"":""NAO36"",""timestamp"":""2022-01-03
+                00:00"",""passCharge"":2.5},{""tagID"":""EGIGQPKI7"",""passID"":236,""passIndex"":8,""stationID"":""NAO39"",""timestamp"":""2022-01-04
+                00:00"",""passCharge"":2.5},{""tagID"":""EGUT0CVS4"",""passID"":331,""passIndex"":9,""stationID"":""NAO30"",""timestamp"":""2022-01-05
+                00:00"",""passCharge"":2.5},{""tagID"":""EGUT0CVS4"",""passID"":347,""passIndex"":10,""stationID"":""NAO16"",""timestamp"":""2022-01-06
+                00:00"",""passCharge"":2.5},{""tagID"":""EG9CHJ755"",""passID"":419,""passIndex"":11,""stationID"":""NAO27"",""timestamp"":""2022-01-07
+                00:00"",""passCharge"":2.5},{""tagID"":""EGSEIMVIH"",""passID"":491,""passIndex"":12,""stationID"":""NAO26"",""timestamp"":""2022-01-08
+                00:00"",""passCharge"":2.5},{""tagID"":""EGC11ERTJ"",""passID"":521,""passIndex"":13,""stationID"":""NAO21"",""timestamp"":""2022-01-08
+                00:00"",""passCharge"":2.5},{""tagID"":""EGIGQPKI7"",""passID"":577,""passIndex"":14,""stationID"":""NAO21"",""timestamp"":""2022-01-09
+                00:00"",""passCharge"":2.5},{""tagID"":""EGRHOCN9J"",""passID"":634,""passIndex"":15,""stationID"":""NAO09"",""timestamp"":""2022-01-09
+                00:00"",""passCharge"":2.5},{""tagID"":""EGYTJXEPQ"",""passID"":670,""passIndex"":16,""stationID"":""NAO19"",""timestamp"":""2022-01-10
+                00:00"",""passCharge"":2.5},{""tagID"":""EGC11ERTJ"",""passID"":730,""passIndex"":17,""stationID"":""NAO29"",""timestamp"":""2022-01-11
+                00:00"",""passCharge"":2.5},{""tagID"":""EGF1T2TAL"",""passID"":788,""passIndex"":18,""stationID"":""NAO18"",""timestamp"":""2022-01-11
+                00:00"",""passCharge"":2.5},{""tagID"":""EGIGQPKI7"",""passID"":815,""passIndex"":19,""stationID"":""NAO16"",""timestamp"":""2022-01-12
+                00:00"",""passCharge"":2.5},{""tagID"":""EG7UR23GD"",""passID"":843,""passIndex"":20,""stationID"":""NAO20"",""timestamp"":""2022-01-12
+                00:00"",""passCharge"":2.5},{""tagID"":""EGF1T2TAL"",""passID"":879,""passIndex"":23,""stationID"":""NAO26"",""timestamp"":""2022-01-13
+                00:00"",""passCharge"":2.5},{""tagID"":""EGSEIMVIH"",""passID"":868,""passIndex"":21,""stationID"":""NAO11"",""timestamp"":""2022-01-13
+                00:00"",""passCharge"":2.5},{""tagID"":""EGVWPVS7H"",""passID"":869,""passIndex"":22,""stationID"":""NAO30"",""timestamp"":""2022-01-13
+                00:00"",""passCharge"":2.5},{""tagID"":""EGUT0CVS4"",""passID"":950,""passIndex"":24,""stationID"":""NAO41"",""timestamp"":""2022-01-14
+                00:00"",""passCharge"":2.5},{""tagID"":""EG7UR23GD"",""passID"":993,""passIndex"":25,""stationID"":""NAO14"",""timestamp"":""2022-01-14
+                00:00"",""passCharge"":2.5},{""tagID"":""EGF1T2TAL"",""passID"":1002,""passIndex"":26,""stationID"":""NAO03"",""timestamp"":""2022-01-14
+                00:00"",""passCharge"":2.5},{""tagID"":""NO7PTX63C"",""passID"":1460,""passIndex"":32,""stationID"":""NAO04"",""timestamp"":""2022-03-05
+                00:00"",""passCharge"":10},{""tagID"":""NAO09SKDGI"",""passID"":1946,""passIndex"":41,""stationID"":""NAO18"",""timestamp"":""2022-03-29
+                00:00"",""passCharge"":2.5},{""tagID"":""OO7PZE9VI"",""passID"":1783,""passIndex"":39,""stationID"":""NAO03"",""timestamp"":""2022-05-05
+                00:00"",""passCharge"":6.25},{""tagID"":""MOJCKJLTE"",""passID"":1970,""passIndex"":43,""stationID"":""NAO32"",""timestamp"":""2022-05-12
+                00:00"",""passCharge"":1.25},{""tagID"":""NOQLL8OS9"",""passID"":1234,""passIndex"":28,""stationID"":""NAO37"",""timestamp"":""2022-05-23
+                00:00"",""passCharge"":2.5},{""tagID"":""AMHJ7XVG0"",""passID"":1663,""passIndex"":35,""stationID"":""NAO12"",""timestamp"":""2022-05-26
+                00:00"",""passCharge"":2.5},{""tagID"":""AMNT3W5UZ"",""passID"":1985,""passIndex"":44,""stationID"":""NAO01"",""timestamp"":""2022-06-15
+                00:00"",""passCharge"":6.25},{""tagID"":""OO3KKV9RF"",""passID"":1966,""passIndex"":42,""stationID"":""NAO24"",""timestamp"":""2022-06-20
+                00:00"",""passCharge"":6.25},{""tagID"":""OO3KKV9RF"",""passID"":1588,""passIndex"":34,""stationID"":""NAO12"",""timestamp"":""2022-07-14
+                00:00"",""passCharge"":10},{""tagID"":""GEX7EEDTJ"",""passID"":1863,""passIndex"":40,""stationID"":""NAO26"",""timestamp"":""2022-09-18
+                00:00"",""passCharge"":10},{""tagID"":""EGVWPVS7H"",""passID"":1303,""passIndex"":29,""stationID"":""NAO10"",""timestamp"":""2022-09-23
+                00:00"",""passCharge"":6.25},{""tagID"":""KOIXA11DP"",""passID"":1364,""passIndex"":30,""stationID"":""NAO33"",""timestamp"":""2022-09-29
+                00:00"",""passCharge"":10},{""tagID"":""NAOHL1N13J"",""passID"":1682,""passIndex"":36,""stationID"":""NAO27"",""timestamp"":""2022-09-30
+                00:00"",""passCharge"":2.5},{""tagID"":""OO3KKV9RF"",""passID"":1049,""passIndex"":27,""stationID"":""NAO07"",""timestamp"":""2022-11-26
+                00:00"",""passCharge"":10},{""tagID"":""NOX6GVWRD"",""passID"":1698,""passIndex"":37,""stationID"":""NAO09"",""timestamp"":""2022-11-30
+                00:00"",""passCharge"":10},{""tagID"":""NOX6GVWRD"",""passID"":1575,""passIndex"":33,""stationID"":""NAO06"",""timestamp"":""2022-12-01
+                00:00"",""passCharge"":1.25},{""tagID"":""OO3KKV9RF"",""passID"":1373,""passIndex"":31,""stationID"":""NAO16"",""timestamp"":""2022-12-17
+                00:00"",""passCharge"":1.25},{""tagID"":""OOQ0OXFQ8"",""passID"":1707,""passIndex"":38,""stationID"":""NAO01"",""timestamp"":""2022-12-30
+                00:00"",""passCharge"":1.25}]"'
+        '400':
+          description: Bad Request by Providing Invalid tagOpID
+          content:
+            application/json:
+              example:
+                status: failed
+                info: Invalid tag operator ID.
+        '204':
+          description: No Content by Providing non-existent tagOpID
+          content:
+            application/json:
+              example: null
+      security:
+      - X-OBSERVATORY-AUTH: []
+  /passesCost/:tollOpID/:tagOpID/:date_from/:date_to:
+    get:
+      summary: passesCost
+      description: This endpoint retrieves the total cost of passes processed by a
+        specific toll operator and tag operator within a given date range. It requires
+        the `tollOpID`, `tagOpID`, `date_from`, and `date_to` parameters.
+      parameters:
+      - name: X-OBSERVATORY-AUTH
+        in: header
+        required: true
+        schema:
+          type: string
+        description: The X-OBSERVATORY-AUTH header is used for authentication. Clients
+          must provide a valid authentication token in the X-OBSERVATORY-AUTH header
+          when making requests to endpoints that require authentication.
+      requestBody: {}
+      responses:
+        '200':
+          description: Successful Call Using CSV Format
+          content:
+            application/json:
+              example: '"tollOpID","tagOpID","requestTimestamp","periodFrom","periodTo","nPasses","passesCost"
+
+                "NAO","EG","2025-02-09 23:16","2022-01-01","2022-12-31",44,165'
+        '400':
+          description: Bad Request by Providing Invalid tagOpID
+          content:
+            application/json:
+              example:
+                status: failed
+                info: Invalid tag operator ID.
+        '204':
+          description: No Content by Providing non-existent tagOpID
+          content:
+            application/json:
+              example: null
+      security:
+      - X-OBSERVATORY-AUTH: []
+  /chargesBy/:tollOpID/:date_from/:date_to:
+    get:
+      summary: chargesBy
+      description: This endpoint retrieves the charges applied by a specific toll
+        operator within a given date range. It requires `tollOpID`, `date_from`, and
+        `date_to` parameters to filter the results.
+      parameters:
+      - name: X-OBSERVATORY-AUTH
+        in: header
+        required: true
+        schema:
+          type: string
+        description: The X-OBSERVATORY-AUTH header is used for authentication. Clients
+          must provide a valid authentication token in the X-OBSERVATORY-AUTH header
+          when making requests to endpoints that require authentication.
+      requestBody: {}
+      responses:
+        '200':
+          description: Successful Call Using CSV Format
+          content:
+            application/json:
+              example: '"tollOpID","requestTimestamp","periodFrom","periodTo","VOpList"
+
+                "NAO","2025-02-08 07:01","2022-01-01","2022-12-31","[{""nPasses"":18,""passesCost"":61.2,""visitingOpID"":""GE""},{""nPasses"":44,""passesCost"":165,""visitingOpID"":""EG""},{""nPasses"":25,""passesCost"":106.2,""visitingOpID"":""KO""},{""nPasses"":17,""passesCost"":88.8,""visitingOpID"":""MO""},{""nPasses"":34,""passesCost"":135,""visitingOpID"":""AM""},{""nPasses"":25,""passesCost"":93.8,""visitingOpID"":""OO""},{""nPasses"":28,""passesCost"":102.5,""visitingOpID"":""NO""}]"'
+        '400':
+          description: Bad Request by Providing Invalid OpID
+          content:
+            application/json:
+              example:
+                status: failed
+                info: Invalid station operator ID.
+        '204':
+          description: No Content by providing non-existent tollOpID
+          content:
+            application/json:
+              example: null
+      security:
+      - X-OBSERVATORY-AUTH: []
+  /notsettled/:id:
+    get:
+      summary: NotSettled
+      description: This endpoint retrieves the unsettled debts of an operator, along
+        with the operators they are owed to. It requires the `id` parameter.
+      parameters:
+      - name: X-OBSERVATORY-AUTH
+        in: header
+        required: true
+        schema:
+          type: string
+        description: The X-OBSERVATORY-AUTH header is used for authentication. Clients
+          must provide a valid authentication token in the X-OBSERVATORY-AUTH header
+          when making requests to endpoints that require authentication.
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties: {}
+      responses: {}
+      security:
+      - X-OBSERVATORY-AUTH: []
+  /totalnotsettled/:id:
+    get:
+      summary: TotalNotSettled
+      description: This endpoint retrieves the total unsettled debt amount for an
+        operator. It requires the `id` parameter.
+      parameters:
+      - name: X-OBSERVATORY-AUTH
+        in: header
+        required: true
+        schema:
+          type: string
+        description: The X-OBSERVATORY-AUTH header is used for authentication. Clients
+          must provide a valid authentication token in the X-OBSERVATORY-AUTH header
+          when making requests to endpoints that require authentication.
+      requestBody: {}
+      responses: {}
+      security:
+      - X-OBSERVATORY-AUTH: []
+  /notverified/:id:
+    get:
+      summary: NotVerified
+      description: This endpoint retrieves debts that have been settled by other operators
+        but not yet verified by the operator these amounts are owed to. It also shows
+        the operators that have settled these amounts. It requires the `id` parameter.
+      parameters:
+      - name: X-OBSERVATORY-AUTH
+        in: header
+        required: true
+        schema:
+          type: string
+        description: The X-OBSERVATORY-AUTH header is used for authentication. Clients
+          must provide a valid authentication token in the X-OBSERVATORY-AUTH header
+          when making requests to endpoints that require authentication.
+      requestBody: {}
+      responses: {}
+      security:
+      - X-OBSERVATORY-AUTH: []
+  /totalnotverified/:id:
+    get:
+      summary: TotalNotVerified
+      description: This endpoint retrieves the total amount of debts that have been
+        settled by other operators but not yet verified by the operator this amount
+        is owed to. It requires the `id` parameter.
+      parameters:
+      - name: X-OBSERVATORY-AUTH
+        in: header
+        required: true
+        schema:
+          type: string
+        description: The X-OBSERVATORY-AUTH header is used for authentication. Clients
+          must provide a valid authentication token in the X-OBSERVATORY-AUTH header
+          when making requests to endpoints that require authentication.
+      requestBody: {}
+      responses: {}
+      security:
+      - X-OBSERVATORY-AUTH: []
+  /settledebt/:debtorId/:creditorId:
+    post:
+      summary: SettleDebt
+      description: This endpoint settles an operator's debt. It requires the `debtorId`
+        and the `creditorId` parameters.
+      parameters:
+      - name: X-OBSERVATORY-AUTH
+        in: header
+        required: true
+        schema:
+          type: string
+        description: The X-OBSERVATORY-AUTH header is used for authentication. Clients
+          must provide a valid authentication token in the X-OBSERVATORY-AUTH header
+          when making requests to endpoints that require authentication.
+      requestBody: {}
+      responses: {}
+      security:
+      - X-OBSERVATORY-AUTH: []
+  /verifypayment/:creditorId/:debtorId:
+    post:
+      summary: VerifyPayment
+      description: This endpoint verifies that a debt has been settled. It requires
+        the `creditorId` and the `debtorId` parameters.
+      parameters:
+      - name: X-OBSERVATORY-AUTH
+        in: header
+        required: true
+        schema:
+          type: string
+        description: The X-OBSERVATORY-AUTH header is used for authentication. Clients
+          must provide a valid authentication token in the X-OBSERVATORY-AUTH header
+          when making requests to endpoints that require authentication.
+      requestBody: {}
+      responses: {}
+      security:
+      - X-OBSERVATORY-AUTH: []
+  /historydebt/:debtorId/:creditorId:
+    get:
+      summary: HistoryDebt
+      description: This endpoint retrieves the monthly debt history of an operator
+        for the last year. It requires the `debtorId` and the `creditorId` parameters.
+      parameters:
+      - name: X-OBSERVATORY-AUTH
+        in: header
+        required: true
+        schema:
+          type: string
+        description: The X-OBSERVATORY-AUTH header is used for authentication. Clients
+          must provide a valid authentication token in the X-OBSERVATORY-AUTH header
+          when making requests to endpoints that require authentication.
+      requestBody: {}
+      responses: {}
+      security:
+      - X-OBSERVATORY-AUTH: []
+  /trafficvariation/:id/:date_from/:date_to:
+    get:
+      summary: TrafficVariation
+      description: This endpoint retrieves the monthly total toll passes from roads
+        that belong to a specific operator within a given date range. It requires
+        the `id` , `date_from` and `date_to` parameters.
+      parameters:
+      - name: X-OBSERVATORY-AUTH
+        in: header
+        required: true
+        schema:
+          type: string
+        description: The X-OBSERVATORY-AUTH header is used for authentication. Clients
+          must provide a valid authentication token in the X-OBSERVATORY-AUTH header
+          when making requests to endpoints that require authentication.
+      requestBody: {}
+      responses: {}
+      security:
+      - X-OBSERVATORY-AUTH: []
+  /roadsperoperator/:id:
+    get:
+      summary: RoadsPerOperator
+      description: This endpoint retrieves the roads that belong to a specific operator.
+        It requires the `id` parameter.
+      parameters:
+      - name: X-OBSERVATORY-AUTH
+        in: header
+        required: true
+        schema:
+          type: string
+        description: The X-OBSERVATORY-AUTH header is used for authentication. Clients
+          must provide a valid authentication token in the X-OBSERVATORY-AUTH header
+          when making requests to endpoints that require authentication.
+      requestBody: {}
+      responses: {}
+      security:
+      - X-OBSERVATORY-AUTH: []
+  /trafficvariationperroad/:id/:road/:date_from/:date_to:
+    get:
+      summary: TrafficVariationPerRoad
+      description: This endpoint retrieves the monthly total toll passes from a given
+        road that belongs to a specific operator within a given date range. It requires
+        the `id` , `road` , `date_from` and `date_to` parameters.
+      parameters:
+      - name: X-OBSERVATORY-AUTH
+        in: header
+        required: true
+        schema:
+          type: string
+        description: The X-OBSERVATORY-AUTH header is used for authentication. Clients
+          must provide a valid authentication token in the X-OBSERVATORY-AUTH header
+          when making requests to endpoints that require authentication.
+      requestBody: {}
+      responses: {}
+      security:
+      - X-OBSERVATORY-AUTH: []
+  /trafficdistribution/:id/:date_from/:date_to:
+    get:
+      summary: TrafficDistribution
+      description: This endpoint retrieves the total toll passes for each road that
+        belongs to a specific operator within a given date range. It requires the
+        `id` , `date_from` and `date_to` parameters.
+      parameters:
+      - name: X-OBSERVATORY-AUTH
+        in: header
+        required: true
+        schema:
+          type: string
+        description: The X-OBSERVATORY-AUTH header is used for authentication. Clients
+          must provide a valid authentication token in the X-OBSERVATORY-AUTH header
+          when making requests to endpoints that require authentication.
+      requestBody: {}
+      responses: {}
+      security:
+      - X-OBSERVATORY-AUTH: []
+  /mostpopulartollbooths/:id:
+    get:
+      summary: MostPopularTollBooths
+      description: This endpoint retrieves the five most popular toll booths based
+        on their total toll passes given the operator these toll stations belong to.
+        It requires the `id` parameter.
+      parameters:
+      - name: X-OBSERVATORY-AUTH
+        in: header
+        required: true
+        schema:
+          type: string
+        description: The X-OBSERVATORY-AUTH header is used for authentication. Clients
+          must provide a valid authentication token in the X-OBSERVATORY-AUTH header
+          when making requests to endpoints that require authentication.
+      requestBody: {}
+      responses: {}
+      security:
+      - X-OBSERVATORY-AUTH: []
+  /debthistorychart/:id/:date_from/:date_to:
+    get:
+      summary: DebtHistoryChart
+      description: This endpoint retrieves the monthly debt history of an operator
+        within a given date range. It requires the `id` , `date_from` and `date_to`
+        parameters.
+      parameters:
+      - name: X-OBSERVATORY-AUTH
+        in: header
+        required: true
+        schema:
+          type: string
+        description: The X-OBSERVATORY-AUTH header is used for authentication. Clients
+          must provide a valid authentication token in the X-OBSERVATORY-AUTH header
+          when making requests to endpoints that require authentication.
+      requestBody: {}
+      responses: {}
+      security:
+      - X-OBSERVATORY-AUTH: []
+  /owedamountschart/:id/:date_from/:date_to:
+    get:
+      summary: OwedAmountsChart
+      description: This endpoint retrieves the monthly amounts that are owed to an
+        operator within a given date range. It also returns the operators that owe
+        these amounts. It requires the `id` , `date_from` and `date_to` parameters.
+      parameters:
+      - name: X-OBSERVATORY-AUTH
+        in: header
+        required: true
+        schema:
+          type: string
+        description: The X-OBSERVATORY-AUTH header is used for authentication. Clients
+          must provide a valid authentication token in the X-OBSERVATORY-AUTH header
+          when making requests to endpoints that require authentication.
+      requestBody: {}
+      responses: {}
+      security:
+      - X-OBSERVATORY-AUTH: []
+  /revenuedistribution/:id/:date_from/:date_to:
+    get:
+      summary: RevenueDistribution
+      description: This endpoint retrieves the total revenues from toll passes on
+        roads that belong to a specific operator within a given date range. It requires
+        the `id` , `date_from` and `date_to` parameters.
+      parameters:
+      - name: X-OBSERVATORY-AUTH
+        in: header
+        required: true
+        schema:
+          type: string
+        description: The X-OBSERVATORY-AUTH header is used for authentication. Clients
+          must provide a valid authentication token in the X-OBSERVATORY-AUTH header
+          when making requests to endpoints that require authentication.
+      requestBody: {}
+      responses: {}
+      security:
+      - X-OBSERVATORY-AUTH: []
+components:
+  securitySchemes:
+    X-OBSERVATORY-AUTH:
+      type: apiKey
+      name: X-OBSERVATORY-AUTH
+      in: header
+      description: API authentication token
+security:
+- X-OBSERVATORY-AUTH: []

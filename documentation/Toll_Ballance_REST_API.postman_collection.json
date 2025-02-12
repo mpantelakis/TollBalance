@@ -1,0 +1,3558 @@
+{
+	"info": {
+		"_postman_id": "8f1aec9e-0641-47ee-bd85-2b9a58968b08",
+		"name": "Toll Ballance REST API",
+		"description": "The **Toll Balance API** provides a set of endpoints designed for managing and monitoring toll station data, toll passes, and user accounts. It enables the addition and analysis of toll pass information, resetting of toll stations and passes, and user management for the toll operation system. The API also includes health check functionality to ensure that the system is running smoothly and that the database connection is operational.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "40699771",
+		"_collection_link": "https://softeng2408-8706.postman.co/workspace/softeng2408-Workspace~e72fa49e-cf90-4a83-87a9-519d17b31475/collection/40290163-8f1aec9e-0641-47ee-bd85-2b9a58968b08?action=share&source=collection_link&creator=40699771"
+	},
+	"item": [
+		{
+			"name": "Admin Endpoints",
+			"item": [
+				{
+					"name": "healthcheck",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Success status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Error status code is 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test(\"Response body has correct structure\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    if (pm.response.code === 200) {",
+									"        // Ensure the response contains ONLY the expected properties for success",
+									"        pm.expect(jsonData).to.have.all.keys(\"status\", \"dbconnection\", \"n_stations\", \"n_tags\", \"n_passes\");",
+									"",
+									"        // Ensure \"status\" has the value \"OK\"",
+									"        pm.expect(jsonData.status).to.equal(\"OK\");",
+									"",
+									"    } else if (pm.response.code === 401) {",
+									"        // Ensure the response contains the expected properties for failure, either dbconnection or info",
+									"        pm.expect(jsonData).to.have.any.keys(\"status\", \"dbconnection\", \"info\");",
+									"",
+									"        // Ensure \"status\" has the value \"failed\"",
+									"        pm.expect(jsonData.status).to.equal(\"failed\");",
+									"",
+									"        // If \"info\" exists, ensure it's \"Not authorized action\"",
+									"        if (jsonData.info) {",
+									"            pm.expect(jsonData.info).to.equal(\"Not authorized action\");",
+									"        }",
+									"",
+									"        // If \"dbconnection\" exists, make sure it's present as well",
+									"        if (jsonData.dbconnection) {",
+									"            pm.expect(jsonData.dbconnection).to.be.a('boolean');",
+									"        }",
+									"    }",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-OBSERVATORY-AUTH",
+								"value": "{{token}}",
+								"description": "The X-OBSERVATORY-AUTH header is used for authentication. Clients must provide a valid authentication token in the X-OBSERVATORY-AUTH header when making requests to endpoints that require authentication.",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/admin/healthcheck",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"admin",
+								"healthcheck"
+							]
+						},
+						"description": "This endpoint performs a health check on the system by verifying the database connection and counting records related to toll stations, distinct tag references, and toll passes in the database."
+					},
+					"response": [
+						{
+							"name": "Successfull Call",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-OBSERVATORY-AUTH",
+										"value": "",
+										"description": "The X-OBSERVATORY-AUTH header is used for authentication. Clients must provide a valid authentication token in the X-OBSERVATORY-AUTH header when making requests to endpoints that require authentication.",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:9115/api/admin/healthcheck",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "9115",
+									"path": [
+										"api",
+										"admin",
+										"healthcheck"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": "{\n    \"status\": \"OK\",\n    \"dbconnection\": \"mysql://root:****@localhost/toll_balance\",\n    \"n_stations\": 253,\n    \"n_tags\": 50,\n    \"n_passes\": 2002\n}"
+						},
+						{
+							"name": "Not Authorized Action",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-OBSERVATORY-AUTH",
+										"value": "{{token}}",
+										"description": "The X-OBSERVATORY-AUTH header is used for authentication. Clients must provide a valid authentication token in the X-OBSERVATORY-AUTH header when making requests to endpoints that require authentication.",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseURL}}/admin/healthcheck",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"admin",
+										"healthcheck"
+									]
+								}
+							},
+							"status": "Unauthorized",
+							"code": 401,
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": "{\n    \"status\": \"failed\",\n    \"info\": \"Not authorized action\"\n}"
+						},
+						{
+							"name": "Connection Failure",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-OBSERVATORY-AUTH",
+										"value": "{{token}}",
+										"description": "The X-OBSERVATORY-AUTH header is used for authentication. Clients must provide a valid authentication token in the X-OBSERVATORY-AUTH header when making requests to endpoints that require authentication.",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseURL}}/admin/healthcheck",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"admin",
+										"healthcheck"
+									]
+								}
+							},
+							"status": "Unauthorized",
+							"code": 401,
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": "{\n    \"status\": \"failed\",\n    \"dbconnection\": \"mysql://root:****@localhost/toll_balance\"\n}"
+						}
+					]
+				},
+				{
+					"name": "addpasses",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response should be a valid JSON\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\", \"application/json; charset=utf-8\");",
+									"    let jsonData = pm.response.json();",
+									"    ",
+									"    // Ensure \"status\" exists and is either \"success\" or \"failed\"",
+									"    pm.expect(jsonData).to.have.property(\"status\");",
+									"    pm.expect([\"OK\", \"failed\"]).to.include(jsonData.status);",
+									"    ",
+									"    // If failed, ensure an error message exists",
+									"    if (jsonData.status === \"failed\") {",
+									"        pm.expect(jsonData).to.have.property(\"info\").that.is.a(\"string\");",
+									"    }",
+									"});",
+									"",
+									"pm.test(\"Response status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Response status code is 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test(\"Response status code is 500\", function () {",
+									"    pm.response.to.have.status(500);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-OBSERVATORY-AUTH",
+								"value": "{{token}}",
+								"description": "The X-OBSERVATORY-AUTH header is used for authentication. Clients must provide a valid authentication token in the X-OBSERVATORY-AUTH header when making requests to endpoints that require authentication.",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "csvFile",
+									"contentType": "",
+									"type": "file",
+									"src": "postman-cloud:///1efe8a14-afb3-4310-89e6-8b2fad446702"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseURL}}/admin/addpasses",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"admin",
+								"addpasses"
+							]
+						},
+						"description": "This endpoint allows you to add toll passes to the system by uploading a CSV file."
+					},
+					"response": [
+						{
+							"name": "Successful Call",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-OBSERVATORY-AUTH",
+										"value": "",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "csvFile",
+											"contentType": "",
+											"type": "file",
+											"src": []
+										}
+									]
+								},
+								"url": {
+									"raw": "http://localhost:9115/api/admin/addpasses",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "9115",
+									"path": [
+										"api",
+										"admin",
+										"addpasses"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": "{\n    \"status\": \"OK\"\n}"
+						},
+						{
+							"name": "Bad Request by Not Providing a File",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-OBSERVATORY-AUTH",
+										"value": "{{token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "csvFile",
+											"contentType": "",
+											"type": "file",
+											"src": []
+										}
+									]
+								},
+								"url": {
+									"raw": "{{baseURL}}/admin/addpasses",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"admin",
+										"addpasses"
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": "{\n    \"status\": \"failed\",\n    \"info\": \"The CSV file is missing.\"\n}"
+						},
+						{
+							"name": "Bad Request by Not Providing a CSV File",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-OBSERVATORY-AUTH",
+										"value": "{{token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "csvFile",
+											"contentType": "",
+											"type": "file",
+											"src": []
+										}
+									]
+								},
+								"url": {
+									"raw": "{{baseURL}}/admin/addpasses",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"admin",
+										"addpasses"
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": "{\n    \"status\": \"failed\",\n    \"info\": \"The file is not a valid CSV file.\"\n}"
+						}
+					]
+				},
+				{
+					"name": "resetpasses",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response should be a valid JSON\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\", \"application/json; charset=utf-8\");",
+									"    let jsonData = pm.response.json();",
+									"    ",
+									"    // Ensure \"status\" exists and is either \"success\" or \"failed\"",
+									"    pm.expect(jsonData).to.have.property(\"status\");",
+									"    pm.expect([\"OK\", \"failed\"]).to.include(jsonData.status);",
+									"    ",
+									"    // If failed, ensure an error message exists",
+									"    if (jsonData.status === \"failed\") {",
+									"        pm.expect(jsonData).to.have.property(\"info\").that.is.a(\"string\");",
+									"    }",
+									"});",
+									"",
+									"pm.test(\"Response status code is 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test(\"Response status code is 500\", function () {",
+									"    pm.response.to.have.status(500);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-OBSERVATORY-AUTH",
+								"value": "{{token}}",
+								"description": "The X-OBSERVATORY-AUTH header is used for authentication. Clients must provide a valid authentication token in the X-OBSERVATORY-AUTH header when making requests to endpoints that require authentication.",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/admin/resetpasses",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"admin",
+								"resetpasses"
+							]
+						},
+						"description": "This endpoint resets all toll passes in the database. It also updates the `admin` password to a default value."
+					},
+					"response": []
+				},
+				{
+					"name": "resetstations",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response should be a valid JSON\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\", \"application/json; charset=utf-8\");",
+									"    let jsonData = pm.response.json();",
+									"    ",
+									"    // Ensure \"status\" exists and is either \"success\" or \"failed\"",
+									"    pm.expect(jsonData).to.have.property(\"status\");",
+									"    pm.expect([\"OK\", \"failed\"]).to.include(jsonData.status);",
+									"    ",
+									"    // If failed, ensure an error message exists",
+									"    if (jsonData.status === \"failed\") {",
+									"        pm.expect(jsonData).to.have.property(\"info\").that.is.a(\"string\");",
+									"    }",
+									"});",
+									"",
+									"pm.test(\"Response status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Response status code is 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test(\"Response status code is 500\", function () {",
+									"    pm.response.to.have.status(500);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-OBSERVATORY-AUTH",
+								"value": "{{token}}",
+								"description": "The X-OBSERVATORY-AUTH header is used for authentication. Clients must provide a valid authentication token in the X-OBSERVATORY-AUTH header when making requests to endpoints that require authentication.",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/admin/resetstations",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"admin",
+								"resetstations"
+							]
+						},
+						"description": "This endpoint resets the toll stations by loading new data from a CSV file located at `../files/tollstations2024.csv`."
+					},
+					"response": []
+				},
+				{
+					"name": "Modify User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-OBSERVATORY-AUTH",
+								"value": "{{token}}",
+								"description": "The X-OBSERVATORY-AUTH header is used for authentication. Clients must provide a valid authentication token in the X-OBSERVATORY-AUTH header when making requests to endpoints that require authentication.",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "username",
+									"value": "egnatia",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "kodikos",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseURL}}/admin/usermod",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"admin",
+								"usermod"
+							]
+						},
+						"description": "This endpoint updates a user's password. If the username is invalid, it returns an error."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Users",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-OBSERVATORY-AUTH",
+								"value": "{{token}}",
+								"description": "The X-OBSERVATORY-AUTH header is used for authentication. Clients must provide a valid authentication token in the X-OBSERVATORY-AUTH header when making requests to endpoints that require authentication.",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/admin/users",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"admin",
+								"users"
+							]
+						},
+						"description": "Retrieves a list of all registered operators in the system. If no users are found, it returns \"No Content\" ; otherwise, it responds with a list of usernames."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Functional Endpoints",
+			"item": [
+				{
+					"name": "login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response body matches strict JSON schema\", function () {",
+									"    const jsonResponse = pm.response.json();",
+									"",
+									"    const schema = {",
+									"        type: \"object\",",
+									"        properties: {",
+									"            token: { type: \"string\" },",
+									"        },",
+									"        required: [\"token\",],",
+									"        additionalProperties: false ",
+									"    };",
+									"",
+									"    pm.expect(jsonResponse).to.be.jsonSchema(schema);",
+									"});",
+									"",
+									"const responseData=pm.response.json().token;",
+									"pm.collectionVariables.set(\"token\",responseData);",
+									"",
+									"pm.test(\"Response status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Response status code is 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test(\"Response status code is 500\", function () {",
+									"    pm.response.to.have.status(500);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "username",
+									"value": "admin",
+									"description": "The username of the user.",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "kodikos",
+									"description": "The password of the user.",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseURL}}/login",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"login"
+							]
+						},
+						"description": "This endpoint logs in a user by verifying the provided username and password. If the credentials are valid, a JWT token is generated and returned."
+					},
+					"response": [
+						{
+							"name": "Successful Login",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "username",
+											"value": "egnatia",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "password",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://localhost:9115/api/login",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "9115",
+									"path": [
+										"api",
+										"login"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": "{\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IkVHIiwidXNlcm5hbWUiOiJlZ25hdGlhIiwiaWF0IjoxNzM5MTM1MzYzLCJleHAiOjE3MzkxNDI1NjN9.kvBeY7lQyHebIG5ghlQFdfW6xlnpdnPdtuwNZVx2zY0\"\n}"
+						},
+						{
+							"name": "Bad Request by Not Providing Password",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "username",
+											"value": "egnatia",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{baseURL}}/login",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"login"
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": "{\n    \"status\": \"failed\",\n    \"info\": \"Credentials are required\"\n}"
+						},
+						{
+							"name": "Not Authorized by Providing Incorrect Password",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "username",
+											"value": "egnatia",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "random",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{baseURL}}/login",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"login"
+									]
+								}
+							},
+							"status": "Unauthorized",
+							"code": 401,
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": "{\n    \"status\": \"failed\",\n    \"info\": \"Invalid credentials\"\n}"
+						}
+					]
+				},
+				{
+					"name": "logout",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"",
+									"pm.collectionVariables.set(\"token\",\"\");"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-OBSERVATORY-AUTH",
+								"value": "{{token}}",
+								"description": "The X-OBSERVATORY-AUTH header is used for authentication. Clients must provide a valid authentication token in the X-OBSERVATORY-AUTH header when making requests to endpoints that require authentication.",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/logout",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"logout"
+							]
+						},
+						"description": "This endpoint logs out the user by simply sending a confirmation response (status `200`). The JWT token sent with the request is invalidated on the client-side."
+					},
+					"response": []
+				},
+				{
+					"name": "tollStationPasses",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Content-Type is application/json\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\", \"application/json; charset=utf-8\");",
+									"});",
+									"",
+									"pm.test(\"Response body matches strict JSON schema\", function () {",
+									"    const jsonResponse = pm.response.json();",
+									"",
+									"    const schema = {",
+									"        type: \"object\",",
+									"        properties: {",
+									"            stationID: { type: \"string\" },",
+									"            stationOperator: { type: \"string\" },",
+									"            requestTimestamp: { type: \"string\" },",
+									"            periodFrom: { type: \"string\" },",
+									"            periodTo: { type: \"string\" },",
+									"            nPasses: { type: \"integer\" },",
+									"            passList: {",
+									"                type: \"array\",",
+									"                items: {",
+									"                    type: \"object\",",
+									"                    properties: {",
+									"                        tagID: { type: \"string\" },",
+									"                        passID: { type: \"integer\" },",
+									"                        passType: { type: \"string\" },",
+									"                        passIndex: { type: \"integer\" },",
+									"                        timestamp: { type: \"string\" },",
+									"                        passCharge: { type: \"number\" },",
+									"                        tagProvider: { type: \"string\" }",
+									"                    },",
+									"                    required: [\"tagID\", \"passID\", \"passType\", \"passIndex\", \"timestamp\", \"passCharge\", \"tagProvider\"],",
+									"                    additionalProperties: false",
+									"                }",
+									"            }",
+									"        },",
+									"        required: [\"stationID\",\"stationOperator\", \"requestTimestamp\", \"periodFrom\", \"periodTo\", \"nPasses\", \"passList\"],",
+									"        additionalProperties: false ",
+									"    };",
+									"",
+									"    pm.expect(jsonResponse).to.be.jsonSchema(schema);",
+									"});",
+									"",
+									"pm.test(\"Content-Type is text/csv\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\", \"text/csv; charset=utf-8\");",
+									"});",
+									"",
+									"pm.test(\"Response body is in valid CSV format\", function () {",
+									"    const csv = pm.response.text();",
+									"",
+									"    // Check if CSV format contains at least one line break, indicating multiple rows",
+									"    pm.expect(csv).to.include('\\n'); // Check if there's more than one row in the CSV",
+									"    pm.expect(csv).to.include(','); // Check if there are commas separating columns",
+									"    ",
+									"    // Ensure the headers are present in the first line",
+									"    const headers = csv.split('\\n')[0]; // Extract the first row (headers)",
+									"    pm.expect(headers).to.include('\"stationID\"');",
+									"    pm.expect(headers).to.include('\"stationOperator\"');",
+									"    pm.expect(headers).to.include('\"requestTimestamp\"');",
+									"    pm.expect(headers).to.include('\"periodFrom\"');",
+									"    pm.expect(headers).to.include('\"periodTo\"');",
+									"    pm.expect(headers).to.include('\"nPasses\"');",
+									"    pm.expect(headers).to.include('\"passList\"');",
+									"});",
+									"",
+									"pm.test(\"Response status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Response status code is 204\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									"",
+									"pm.test(\"Response status code is 500\", function () {",
+									"    pm.response.to.have.status(500);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-OBSERVATORY-AUTH",
+								"value": "{{token}}",
+								"description": "The X-OBSERVATORY-AUTH header is used for authentication. Clients must provide a valid authentication token in the X-OBSERVATORY-AUTH header when making requests to endpoints that require authentication.",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/tollStationPasses/:tollStationID/:date_from/:date_to?format=json",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"tollStationPasses",
+								":tollStationID",
+								":date_from",
+								":date_to"
+							],
+							"query": [
+								{
+									"key": "format",
+									"value": "json",
+									"description": "The response format, either csv or json."
+								}
+							],
+							"variable": [
+								{
+									"key": "tollStationID",
+									"value": "EG04",
+									"description": "The unique ID of the toll station"
+								},
+								{
+									"key": "date_from",
+									"value": "20220101",
+									"description": "The starting date of the range."
+								},
+								{
+									"key": "date_to",
+									"value": "20231230",
+									"description": "The ending date of the range"
+								}
+							]
+						},
+						"description": "This endpoint retrieves the toll station passes for a specific toll station within a given date range. It requires the `tollStationID`, `date_from`, and `date_to` parameters to filter the results."
+					},
+					"response": [
+						{
+							"name": "Successful Call Using JSON Format",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-OBSERVATORY-AUTH",
+										"value": "",
+										"description": "The X-OBSERVATORY-AUTH header is used for authentication. Clients must provide a valid authentication token in the X-OBSERVATORY-AUTH header when making requests to endpoints that require authentication.",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:9115/api/tollStationPasses/:tollStationID/:date_from/:date_to?format=json",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "9115",
+									"path": [
+										"api",
+										"tollStationPasses",
+										":tollStationID",
+										":date_from",
+										":date_to"
+									],
+									"query": [
+										{
+											"key": "format",
+											"value": "json",
+											"description": "The response format, either csv or json."
+										}
+									],
+									"variable": [
+										{
+											"key": "tollStationID",
+											"value": "EG45",
+											"description": "The unique ID of the toll station"
+										},
+										{
+											"key": "date_from",
+											"value": "20220101",
+											"description": "The starting date of the range."
+										},
+										{
+											"key": "date_to",
+											"value": "20221231",
+											"description": "The ending date of the range"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": "{\n    \"stationID\": \"EG45\",\n    \"stationOperator\": \"egnatia\",\n    \"requestTimestamp\": \"2025-02-10 00:23\",\n    \"periodFrom\": \"2022-01-01\",\n    \"periodTo\": \"2022-12-31\",\n    \"nPasses\": 2,\n    \"passList\": [\n        {\n            \"tagID\": \"AMLJH75LX\",\n            \"passID\": 1152,\n            \"passType\": \"visitor\",\n            \"passIndex\": 2,\n            \"timestamp\": \"2022-05-02 00:00\",\n            \"passCharge\": 0.30000001192092896,\n            \"tagProvider\": \"OO\"\n        },\n        {\n            \"tagID\": \"NAOLY8OZCY\",\n            \"passID\": 1076,\n            \"passType\": \"home\",\n            \"passIndex\": 1,\n            \"timestamp\": \"2022-12-11 00:00\",\n            \"passCharge\": 0.20000000298023224,\n            \"tagProvider\": \"EG\"\n        }\n    ]\n}"
+						},
+						{
+							"name": "Successful Call Using CSV Format",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-OBSERVATORY-AUTH",
+										"value": "{{token}}",
+										"description": "The X-OBSERVATORY-AUTH header is used for authentication. Clients must provide a valid authentication token in the X-OBSERVATORY-AUTH header when making requests to endpoints that require authentication.",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseURL}}/tollStationPasses/:tollStationID/:date_from/:date_to?format=csv",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"tollStationPasses",
+										":tollStationID",
+										":date_from",
+										":date_to"
+									],
+									"query": [
+										{
+											"key": "format",
+											"value": "csv",
+											"description": "The response format, either csv or json."
+										}
+									],
+									"variable": [
+										{
+											"key": "tollStationID",
+											"value": "EG45",
+											"description": "The unique ID of the toll station"
+										},
+										{
+											"key": "date_from",
+											"value": "20220101",
+											"description": "The starting date of the range."
+										},
+										{
+											"key": "date_to",
+											"value": "20221231",
+											"description": "The ending date of the range"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": "\"stationID\",\"stationOperator\",\"requestTimestamp\",\"periodFrom\",\"periodTo\",\"nPasses\",\"passList\"\n\"EG45\",\"egnatia\",\"2025-02-10 00:23\",\"2022-01-01\",\"2022-12-31\",2,\"[{\"\"tagID\"\":\"\"AMLJH75LX\"\",\"\"passID\"\":1152,\"\"passType\"\":\"\"visitor\"\",\"\"passIndex\"\":2,\"\"timestamp\"\":\"\"2022-05-02 00:00\"\",\"\"passCharge\"\":0.30000001192092896,\"\"tagProvider\"\":\"\"OO\"\"},{\"\"tagID\"\":\"\"NAOLY8OZCY\"\",\"\"passID\"\":1076,\"\"passType\"\":\"\"home\"\",\"\"passIndex\"\":1,\"\"timestamp\"\":\"\"2022-12-11 00:00\"\",\"\"passCharge\"\":0.20000000298023224,\"\"tagProvider\"\":\"\"EG\"\"}]\""
+						},
+						{
+							"name": "Bad Request by Providing Invalid tollStationID",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-OBSERVATORY-AUTH",
+										"value": "{{token}}",
+										"description": "The X-OBSERVATORY-AUTH header is used for authentication. Clients must provide a valid authentication token in the X-OBSERVATORY-AUTH header when making requests to endpoints that require authentication.",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseURL}}/tollStationPasses/:tollStationID/:date_from/:date_to?format=json",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"tollStationPasses",
+										":tollStationID",
+										":date_from",
+										":date_to"
+									],
+									"query": [
+										{
+											"key": "format",
+											"value": "json",
+											"description": "The response format, either csv or json."
+										}
+									],
+									"variable": [
+										{
+											"key": "tollStationID",
+											"value": "EG",
+											"description": "The unique ID of the toll station"
+										},
+										{
+											"key": "date_from",
+											"value": "20220101",
+											"description": "The starting date of the range."
+										},
+										{
+											"key": "date_to",
+											"value": "20221231",
+											"description": "The ending date of the range"
+										}
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": "{\n    \"status\": \"failed\",\n    \"info\": \"Invalid toll station ID.\"\n}"
+						},
+						{
+							"name": "Bad Request by Providing Invalid Date",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-OBSERVATORY-AUTH",
+										"value": "{{token}}",
+										"description": "The X-OBSERVATORY-AUTH header is used for authentication. Clients must provide a valid authentication token in the X-OBSERVATORY-AUTH header when making requests to endpoints that require authentication.",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseURL}}/tollStationPasses/:tollStationID/:date_from/:date_to?format=json",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"tollStationPasses",
+										":tollStationID",
+										":date_from",
+										":date_to"
+									],
+									"query": [
+										{
+											"key": "format",
+											"value": "json",
+											"description": "The response format, either csv or json."
+										}
+									],
+									"variable": [
+										{
+											"key": "tollStationID",
+											"value": "EG01",
+											"description": "The unique ID of the toll station"
+										},
+										{
+											"key": "date_from",
+											"value": "2022",
+											"description": "The starting date of the range."
+										},
+										{
+											"key": "date_to",
+											"value": "20221231",
+											"description": "The ending date of the range"
+										}
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": "{\n    \"status\": \"failed\",\n    \"info\": \"Invalid 'date_from' parameter. It should be in YYYYMMDD format.\"\n}"
+						},
+						{
+							"name": "No Content by Providing non-existent tollStationID",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-OBSERVATORY-AUTH",
+										"value": "{{token}}",
+										"description": "The X-OBSERVATORY-AUTH header is used for authentication. Clients must provide a valid authentication token in the X-OBSERVATORY-AUTH header when making requests to endpoints that require authentication.",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseURL}}/tollStationPasses/:tollStationID/:date_from/:date_to?format=json",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"tollStationPasses",
+										":tollStationID",
+										":date_from",
+										":date_to"
+									],
+									"query": [
+										{
+											"key": "format",
+											"value": "json",
+											"description": "The response format, either csv or json."
+										}
+									],
+									"variable": [
+										{
+											"key": "tollStationID",
+											"value": "EG135",
+											"description": "The unique ID of the toll station"
+										},
+										{
+											"key": "date_from",
+											"value": "20220101",
+											"description": "The starting date of the range."
+										},
+										{
+											"key": "date_to",
+											"value": "20221231",
+											"description": "The ending date of the range"
+										}
+									]
+								}
+							},
+							"status": "No Content",
+							"code": 204,
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": null
+						}
+					]
+				},
+				{
+					"name": "passAnalysis",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Content-Type is application/json\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\", \"application/json; charset=utf-8\");",
+									"});",
+									"",
+									"pm.test(\"Response body matches strict JSON schema\", function () {",
+									"    const jsonResponse = pm.response.json();",
+									"",
+									"    const schema = {",
+									"        type: \"object\",",
+									"        properties: {",
+									"            stationOpID: { type: \"string\" },",
+									"            tagOpID: { type: \"string\" },",
+									"            requestTimestamp: { type: \"string\" },",
+									"            periodFrom: { type: \"string\" },",
+									"            periodTo: { type: \"string\" },",
+									"            nPasses: { type: \"integer\" },",
+									"            passList: {",
+									"                type: \"array\",",
+									"                items: {",
+									"                    type: \"object\",",
+									"                    properties: {",
+									"                        tagID: { type: \"string\" },",
+									"                        passID: { type: \"integer\" },",
+									"                        passIndex: { type: \"integer\" },",
+									"                        stationID: { type: \"string\" },",
+									"                        timestamp: { type: \"string\" },",
+									"                        passCharge: { type: \"number\" }",
+									"                    },",
+									"                    required: [\"tagID\", \"passID\", \"passIndex\", \"stationID\", \"timestamp\", \"passCharge\"],",
+									"                    additionalProperties: false",
+									"                }",
+									"            }",
+									"        },",
+									"        required: [\"stationOpID\",\"tagOpID\", \"requestTimestamp\", \"periodFrom\", \"periodTo\", \"nPasses\", \"passList\"],",
+									"        additionalProperties: false ",
+									"    };",
+									"",
+									"    pm.expect(jsonResponse).to.be.jsonSchema(schema);",
+									"});",
+									"",
+									"pm.test(\"Content-Type is text/csv\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\", \"text/csv; charset=utf-8\");",
+									"});",
+									"",
+									"pm.test(\"Response body is in valid CSV format\", function () {",
+									"    const csv = pm.response.text();",
+									"",
+									"    // Check if CSV format contains at least one line break, indicating multiple rows",
+									"    pm.expect(csv).to.include('\\n'); // Check if there's more than one row in the CSV",
+									"    pm.expect(csv).to.include(','); // Check if there are commas separating columns",
+									"    ",
+									"    // Ensure the headers are present in the first line",
+									"    const headers = csv.split('\\n')[0]; // Extract the first row (headers)",
+									"    pm.expect(headers).to.include('\"stationOpID\"');",
+									"    pm.expect(headers).to.include('\"tagOpID\"');",
+									"    pm.expect(headers).to.include('\"requestTimestamp\"');",
+									"    pm.expect(headers).to.include('\"periodFrom\"');",
+									"    pm.expect(headers).to.include('\"periodTo\"');",
+									"    pm.expect(headers).to.include('\"nPasses\"');",
+									"    pm.expect(headers).to.include('\"passList\"');",
+									"});",
+									"",
+									"pm.test(\"Response status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Response status code is 204\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									"",
+									"pm.test(\"Response status code is 500\", function () {",
+									"    pm.response.to.have.status(500);",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-OBSERVATORY-AUTH",
+								"value": "{{token}}",
+								"description": "The X-OBSERVATORY-AUTH header is used for authentication. Clients must provide a valid authentication token in the X-OBSERVATORY-AUTH header when making requests to endpoints that require authentication.",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/passAnalysis/:stationOpID/:tagOpID/:date_from/:date_to?format=json",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"passAnalysis",
+								":stationOpID",
+								":tagOpID",
+								":date_from",
+								":date_to"
+							],
+							"query": [
+								{
+									"key": "format",
+									"value": "json",
+									"description": "The response format, either csv or json."
+								}
+							],
+							"variable": [
+								{
+									"key": "stationOpID",
+									"value": "AM",
+									"description": "The operator ID of the toll station"
+								},
+								{
+									"key": "tagOpID",
+									"value": "NAO",
+									"description": "The operator ID of the tag system"
+								},
+								{
+									"key": "date_from",
+									"value": "20220101",
+									"description": "The starting date of the range."
+								},
+								{
+									"key": "date_to",
+									"value": "20221231",
+									"description": "The ending date of the range."
+								}
+							]
+						},
+						"description": "This endpoint analyzes passes for a specific toll station operator and tag operator within a given date range. It requires `stationOpID`, `tagOpID`, `date_from`, and `date_to` parameters to filter the results."
+					},
+					"response": [
+						{
+							"name": "Successful Call Using JSON Format",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-OBSERVATORY-AUTH",
+										"value": "",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:9115/api/passAnalysis/:stationOpID/:tagOpID/:date_from/:date_to?format=json",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "9115",
+									"path": [
+										"api",
+										"passAnalysis",
+										":stationOpID",
+										":tagOpID",
+										":date_from",
+										":date_to"
+									],
+									"query": [
+										{
+											"key": "format",
+											"value": "json",
+											"description": "The response format, either csv or json."
+										}
+									],
+									"variable": [
+										{
+											"key": "stationOpID",
+											"value": "NAO",
+											"description": "The operator ID of the toll station"
+										},
+										{
+											"key": "tagOpID",
+											"value": "EG",
+											"description": "The operator ID of the tag system"
+										},
+										{
+											"key": "date_from",
+											"value": "20220101",
+											"description": "The starting date of the range."
+										},
+										{
+											"key": "date_to",
+											"value": "20221231",
+											"description": "The ending date of the range."
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": "{\n    \"stationOpID\": \"NAO\",\n    \"tagOpID\": \"EG\",\n    \"requestTimestamp\": \"2025-02-10 00:25\",\n    \"periodFrom\": \"2022-01-01\",\n    \"periodTo\": \"2022-12-31\",\n    \"nPasses\": 44,\n    \"passList\": [\n        {\n            \"tagID\": \"EG9CHJ755\",\n            \"passID\": 35,\n            \"passIndex\": 2,\n            \"stationID\": \"NAO03\",\n            \"timestamp\": \"2022-01-01 00:00\",\n            \"passCharge\": 2.5\n        },\n        {\n            \"tagID\": \"EG7UR23GD\",\n            \"passID\": 31,\n            \"passIndex\": 1,\n            \"stationID\": \"NAO32\",\n            \"timestamp\": \"2022-01-01 00:00\",\n            \"passCharge\": 2.5\n        },\n        {\n            \"tagID\": \"EGRHOCN9J\",\n            \"passID\": 40,\n            \"passIndex\": 3,\n            \"stationID\": \"NAO40\",\n            \"timestamp\": \"2022-01-01 00:00\",\n            \"passCharge\": 2.5\n        },\n        {\n            \"tagID\": \"EG9CHJ755\",\n            \"passID\": 66,\n            \"passIndex\": 4,\n            \"stationID\": \"NAO23\",\n            \"timestamp\": \"2022-01-02 00:00\",\n            \"passCharge\": 2.5\n        },\n        {\n            \"tagID\": \"EGUT0CVS4\",\n            \"passID\": 88,\n            \"passIndex\": 5,\n            \"stationID\": \"NAO05\",\n            \"timestamp\": \"2022-01-02 00:00\",\n            \"passCharge\": 2.5\n        },\n        {\n            \"tagID\": \"EGSEIMVIH\",\n            \"passID\": 155,\n            \"passIndex\": 6,\n            \"stationID\": \"NAO10\",\n            \"timestamp\": \"2022-01-03 00:00\",\n            \"passCharge\": 2.5\n        },\n        {\n            \"tagID\": \"EGVWPVS7H\",\n            \"passID\": 173,\n            \"passIndex\": 7,\n            \"stationID\": \"NAO36\",\n            \"timestamp\": \"2022-01-03 00:00\",\n            \"passCharge\": 2.5\n        },\n        {\n            \"tagID\": \"EGIGQPKI7\",\n            \"passID\": 236,\n            \"passIndex\": 8,\n            \"stationID\": \"NAO39\",\n            \"timestamp\": \"2022-01-04 00:00\",\n            \"passCharge\": 2.5\n        },\n        {\n            \"tagID\": \"EGUT0CVS4\",\n            \"passID\": 331,\n            \"passIndex\": 9,\n            \"stationID\": \"NAO30\",\n            \"timestamp\": \"2022-01-05 00:00\",\n            \"passCharge\": 2.5\n        },\n        {\n            \"tagID\": \"EGUT0CVS4\",\n            \"passID\": 347,\n            \"passIndex\": 10,\n            \"stationID\": \"NAO16\",\n            \"timestamp\": \"2022-01-06 00:00\",\n            \"passCharge\": 2.5\n        },\n        {\n            \"tagID\": \"EG9CHJ755\",\n            \"passID\": 419,\n            \"passIndex\": 11,\n            \"stationID\": \"NAO27\",\n            \"timestamp\": \"2022-01-07 00:00\",\n            \"passCharge\": 2.5\n        },\n        {\n            \"tagID\": \"EGSEIMVIH\",\n            \"passID\": 491,\n            \"passIndex\": 12,\n            \"stationID\": \"NAO26\",\n            \"timestamp\": \"2022-01-08 00:00\",\n            \"passCharge\": 2.5\n        },\n        {\n            \"tagID\": \"EGC11ERTJ\",\n            \"passID\": 521,\n            \"passIndex\": 13,\n            \"stationID\": \"NAO21\",\n            \"timestamp\": \"2022-01-08 00:00\",\n            \"passCharge\": 2.5\n        },\n        {\n            \"tagID\": \"EGIGQPKI7\",\n            \"passID\": 577,\n            \"passIndex\": 14,\n            \"stationID\": \"NAO21\",\n            \"timestamp\": \"2022-01-09 00:00\",\n            \"passCharge\": 2.5\n        },\n        {\n            \"tagID\": \"EGRHOCN9J\",\n            \"passID\": 634,\n            \"passIndex\": 15,\n            \"stationID\": \"NAO09\",\n            \"timestamp\": \"2022-01-09 00:00\",\n            \"passCharge\": 2.5\n        },\n        {\n            \"tagID\": \"EGYTJXEPQ\",\n            \"passID\": 670,\n            \"passIndex\": 16,\n            \"stationID\": \"NAO19\",\n            \"timestamp\": \"2022-01-10 00:00\",\n            \"passCharge\": 2.5\n        },\n        {\n            \"tagID\": \"EGC11ERTJ\",\n            \"passID\": 730,\n            \"passIndex\": 17,\n            \"stationID\": \"NAO29\",\n            \"timestamp\": \"2022-01-11 00:00\",\n            \"passCharge\": 2.5\n        },\n        {\n            \"tagID\": \"EGF1T2TAL\",\n            \"passID\": 788,\n            \"passIndex\": 18,\n            \"stationID\": \"NAO18\",\n            \"timestamp\": \"2022-01-11 00:00\",\n            \"passCharge\": 2.5\n        },\n        {\n            \"tagID\": \"EGIGQPKI7\",\n            \"passID\": 815,\n            \"passIndex\": 19,\n            \"stationID\": \"NAO16\",\n            \"timestamp\": \"2022-01-12 00:00\",\n            \"passCharge\": 2.5\n        },\n        {\n            \"tagID\": \"EG7UR23GD\",\n            \"passID\": 843,\n            \"passIndex\": 20,\n            \"stationID\": \"NAO20\",\n            \"timestamp\": \"2022-01-12 00:00\",\n            \"passCharge\": 2.5\n        },\n        {\n            \"tagID\": \"EGF1T2TAL\",\n            \"passID\": 879,\n            \"passIndex\": 23,\n            \"stationID\": \"NAO26\",\n            \"timestamp\": \"2022-01-13 00:00\",\n            \"passCharge\": 2.5\n        },\n        {\n            \"tagID\": \"EGSEIMVIH\",\n            \"passID\": 868,\n            \"passIndex\": 21,\n            \"stationID\": \"NAO11\",\n            \"timestamp\": \"2022-01-13 00:00\",\n            \"passCharge\": 2.5\n        },\n        {\n            \"tagID\": \"EGVWPVS7H\",\n            \"passID\": 869,\n            \"passIndex\": 22,\n            \"stationID\": \"NAO30\",\n            \"timestamp\": \"2022-01-13 00:00\",\n            \"passCharge\": 2.5\n        },\n        {\n            \"tagID\": \"EGUT0CVS4\",\n            \"passID\": 950,\n            \"passIndex\": 24,\n            \"stationID\": \"NAO41\",\n            \"timestamp\": \"2022-01-14 00:00\",\n            \"passCharge\": 2.5\n        },\n        {\n            \"tagID\": \"EG7UR23GD\",\n            \"passID\": 993,\n            \"passIndex\": 25,\n            \"stationID\": \"NAO14\",\n            \"timestamp\": \"2022-01-14 00:00\",\n            \"passCharge\": 2.5\n        },\n        {\n            \"tagID\": \"EGF1T2TAL\",\n            \"passID\": 1002,\n            \"passIndex\": 26,\n            \"stationID\": \"NAO03\",\n            \"timestamp\": \"2022-01-14 00:00\",\n            \"passCharge\": 2.5\n        },\n        {\n            \"tagID\": \"NO7PTX63C\",\n            \"passID\": 1460,\n            \"passIndex\": 32,\n            \"stationID\": \"NAO04\",\n            \"timestamp\": \"2022-03-05 00:00\",\n            \"passCharge\": 10\n        },\n        {\n            \"tagID\": \"NAO09SKDGI\",\n            \"passID\": 1946,\n            \"passIndex\": 41,\n            \"stationID\": \"NAO18\",\n            \"timestamp\": \"2022-03-29 00:00\",\n            \"passCharge\": 2.5\n        },\n        {\n            \"tagID\": \"OO7PZE9VI\",\n            \"passID\": 1783,\n            \"passIndex\": 39,\n            \"stationID\": \"NAO03\",\n            \"timestamp\": \"2022-05-05 00:00\",\n            \"passCharge\": 6.25\n        },\n        {\n            \"tagID\": \"MOJCKJLTE\",\n            \"passID\": 1970,\n            \"passIndex\": 43,\n            \"stationID\": \"NAO32\",\n            \"timestamp\": \"2022-05-12 00:00\",\n            \"passCharge\": 1.25\n        },\n        {\n            \"tagID\": \"NOQLL8OS9\",\n            \"passID\": 1234,\n            \"passIndex\": 28,\n            \"stationID\": \"NAO37\",\n            \"timestamp\": \"2022-05-23 00:00\",\n            \"passCharge\": 2.5\n        },\n        {\n            \"tagID\": \"AMHJ7XVG0\",\n            \"passID\": 1663,\n            \"passIndex\": 35,\n            \"stationID\": \"NAO12\",\n            \"timestamp\": \"2022-05-26 00:00\",\n            \"passCharge\": 2.5\n        },\n        {\n            \"tagID\": \"AMNT3W5UZ\",\n            \"passID\": 1985,\n            \"passIndex\": 44,\n            \"stationID\": \"NAO01\",\n            \"timestamp\": \"2022-06-15 00:00\",\n            \"passCharge\": 6.25\n        },\n        {\n            \"tagID\": \"OO3KKV9RF\",\n            \"passID\": 1966,\n            \"passIndex\": 42,\n            \"stationID\": \"NAO24\",\n            \"timestamp\": \"2022-06-20 00:00\",\n            \"passCharge\": 6.25\n        },\n        {\n            \"tagID\": \"OO3KKV9RF\",\n            \"passID\": 1588,\n            \"passIndex\": 34,\n            \"stationID\": \"NAO12\",\n            \"timestamp\": \"2022-07-14 00:00\",\n            \"passCharge\": 10\n        },\n        {\n            \"tagID\": \"GEX7EEDTJ\",\n            \"passID\": 1863,\n            \"passIndex\": 40,\n            \"stationID\": \"NAO26\",\n            \"timestamp\": \"2022-09-18 00:00\",\n            \"passCharge\": 10\n        },\n        {\n            \"tagID\": \"EGVWPVS7H\",\n            \"passID\": 1303,\n            \"passIndex\": 29,\n            \"stationID\": \"NAO10\",\n            \"timestamp\": \"2022-09-23 00:00\",\n            \"passCharge\": 6.25\n        },\n        {\n            \"tagID\": \"KOIXA11DP\",\n            \"passID\": 1364,\n            \"passIndex\": 30,\n            \"stationID\": \"NAO33\",\n            \"timestamp\": \"2022-09-29 00:00\",\n            \"passCharge\": 10\n        },\n        {\n            \"tagID\": \"NAOHL1N13J\",\n            \"passID\": 1682,\n            \"passIndex\": 36,\n            \"stationID\": \"NAO27\",\n            \"timestamp\": \"2022-09-30 00:00\",\n            \"passCharge\": 2.5\n        },\n        {\n            \"tagID\": \"OO3KKV9RF\",\n            \"passID\": 1049,\n            \"passIndex\": 27,\n            \"stationID\": \"NAO07\",\n            \"timestamp\": \"2022-11-26 00:00\",\n            \"passCharge\": 10\n        },\n        {\n            \"tagID\": \"NOX6GVWRD\",\n            \"passID\": 1698,\n            \"passIndex\": 37,\n            \"stationID\": \"NAO09\",\n            \"timestamp\": \"2022-11-30 00:00\",\n            \"passCharge\": 10\n        },\n        {\n            \"tagID\": \"NOX6GVWRD\",\n            \"passID\": 1575,\n            \"passIndex\": 33,\n            \"stationID\": \"NAO06\",\n            \"timestamp\": \"2022-12-01 00:00\",\n            \"passCharge\": 1.25\n        },\n        {\n            \"tagID\": \"OO3KKV9RF\",\n            \"passID\": 1373,\n            \"passIndex\": 31,\n            \"stationID\": \"NAO16\",\n            \"timestamp\": \"2022-12-17 00:00\",\n            \"passCharge\": 1.25\n        },\n        {\n            \"tagID\": \"OOQ0OXFQ8\",\n            \"passID\": 1707,\n            \"passIndex\": 38,\n            \"stationID\": \"NAO01\",\n            \"timestamp\": \"2022-12-30 00:00\",\n            \"passCharge\": 1.25\n        }\n    ]\n}"
+						},
+						{
+							"name": "Successful Call Using CSV Format",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-OBSERVATORY-AUTH",
+										"value": "{{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseURL}}/passAnalysis/:stationOpID/:tagOpID/:date_from/:date_to?format=csv",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"passAnalysis",
+										":stationOpID",
+										":tagOpID",
+										":date_from",
+										":date_to"
+									],
+									"query": [
+										{
+											"key": "format",
+											"value": "csv",
+											"description": "The response format, either csv or json."
+										}
+									],
+									"variable": [
+										{
+											"key": "stationOpID",
+											"value": "NAO",
+											"description": "The operator ID of the toll station"
+										},
+										{
+											"key": "tagOpID",
+											"value": "EG",
+											"description": "The operator ID of the tag system"
+										},
+										{
+											"key": "date_from",
+											"value": "20220101",
+											"description": "The starting date of the range."
+										},
+										{
+											"key": "date_to",
+											"value": "20221231",
+											"description": "The ending date of the range."
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": "\"stationOpID\",\"tagOpID\",\"requestTimestamp\",\"periodFrom\",\"periodTo\",\"nPasses\",\"passList\"\n\"NAO\",\"EG\",\"2025-02-10 00:25\",\"2022-01-01\",\"2022-12-31\",44,\"[{\"\"tagID\"\":\"\"EG9CHJ755\"\",\"\"passID\"\":35,\"\"passIndex\"\":2,\"\"stationID\"\":\"\"NAO03\"\",\"\"timestamp\"\":\"\"2022-01-01 00:00\"\",\"\"passCharge\"\":2.5},{\"\"tagID\"\":\"\"EG7UR23GD\"\",\"\"passID\"\":31,\"\"passIndex\"\":1,\"\"stationID\"\":\"\"NAO32\"\",\"\"timestamp\"\":\"\"2022-01-01 00:00\"\",\"\"passCharge\"\":2.5},{\"\"tagID\"\":\"\"EGRHOCN9J\"\",\"\"passID\"\":40,\"\"passIndex\"\":3,\"\"stationID\"\":\"\"NAO40\"\",\"\"timestamp\"\":\"\"2022-01-01 00:00\"\",\"\"passCharge\"\":2.5},{\"\"tagID\"\":\"\"EG9CHJ755\"\",\"\"passID\"\":66,\"\"passIndex\"\":4,\"\"stationID\"\":\"\"NAO23\"\",\"\"timestamp\"\":\"\"2022-01-02 00:00\"\",\"\"passCharge\"\":2.5},{\"\"tagID\"\":\"\"EGUT0CVS4\"\",\"\"passID\"\":88,\"\"passIndex\"\":5,\"\"stationID\"\":\"\"NAO05\"\",\"\"timestamp\"\":\"\"2022-01-02 00:00\"\",\"\"passCharge\"\":2.5},{\"\"tagID\"\":\"\"EGSEIMVIH\"\",\"\"passID\"\":155,\"\"passIndex\"\":6,\"\"stationID\"\":\"\"NAO10\"\",\"\"timestamp\"\":\"\"2022-01-03 00:00\"\",\"\"passCharge\"\":2.5},{\"\"tagID\"\":\"\"EGVWPVS7H\"\",\"\"passID\"\":173,\"\"passIndex\"\":7,\"\"stationID\"\":\"\"NAO36\"\",\"\"timestamp\"\":\"\"2022-01-03 00:00\"\",\"\"passCharge\"\":2.5},{\"\"tagID\"\":\"\"EGIGQPKI7\"\",\"\"passID\"\":236,\"\"passIndex\"\":8,\"\"stationID\"\":\"\"NAO39\"\",\"\"timestamp\"\":\"\"2022-01-04 00:00\"\",\"\"passCharge\"\":2.5},{\"\"tagID\"\":\"\"EGUT0CVS4\"\",\"\"passID\"\":331,\"\"passIndex\"\":9,\"\"stationID\"\":\"\"NAO30\"\",\"\"timestamp\"\":\"\"2022-01-05 00:00\"\",\"\"passCharge\"\":2.5},{\"\"tagID\"\":\"\"EGUT0CVS4\"\",\"\"passID\"\":347,\"\"passIndex\"\":10,\"\"stationID\"\":\"\"NAO16\"\",\"\"timestamp\"\":\"\"2022-01-06 00:00\"\",\"\"passCharge\"\":2.5},{\"\"tagID\"\":\"\"EG9CHJ755\"\",\"\"passID\"\":419,\"\"passIndex\"\":11,\"\"stationID\"\":\"\"NAO27\"\",\"\"timestamp\"\":\"\"2022-01-07 00:00\"\",\"\"passCharge\"\":2.5},{\"\"tagID\"\":\"\"EGSEIMVIH\"\",\"\"passID\"\":491,\"\"passIndex\"\":12,\"\"stationID\"\":\"\"NAO26\"\",\"\"timestamp\"\":\"\"2022-01-08 00:00\"\",\"\"passCharge\"\":2.5},{\"\"tagID\"\":\"\"EGC11ERTJ\"\",\"\"passID\"\":521,\"\"passIndex\"\":13,\"\"stationID\"\":\"\"NAO21\"\",\"\"timestamp\"\":\"\"2022-01-08 00:00\"\",\"\"passCharge\"\":2.5},{\"\"tagID\"\":\"\"EGIGQPKI7\"\",\"\"passID\"\":577,\"\"passIndex\"\":14,\"\"stationID\"\":\"\"NAO21\"\",\"\"timestamp\"\":\"\"2022-01-09 00:00\"\",\"\"passCharge\"\":2.5},{\"\"tagID\"\":\"\"EGRHOCN9J\"\",\"\"passID\"\":634,\"\"passIndex\"\":15,\"\"stationID\"\":\"\"NAO09\"\",\"\"timestamp\"\":\"\"2022-01-09 00:00\"\",\"\"passCharge\"\":2.5},{\"\"tagID\"\":\"\"EGYTJXEPQ\"\",\"\"passID\"\":670,\"\"passIndex\"\":16,\"\"stationID\"\":\"\"NAO19\"\",\"\"timestamp\"\":\"\"2022-01-10 00:00\"\",\"\"passCharge\"\":2.5},{\"\"tagID\"\":\"\"EGC11ERTJ\"\",\"\"passID\"\":730,\"\"passIndex\"\":17,\"\"stationID\"\":\"\"NAO29\"\",\"\"timestamp\"\":\"\"2022-01-11 00:00\"\",\"\"passCharge\"\":2.5},{\"\"tagID\"\":\"\"EGF1T2TAL\"\",\"\"passID\"\":788,\"\"passIndex\"\":18,\"\"stationID\"\":\"\"NAO18\"\",\"\"timestamp\"\":\"\"2022-01-11 00:00\"\",\"\"passCharge\"\":2.5},{\"\"tagID\"\":\"\"EGIGQPKI7\"\",\"\"passID\"\":815,\"\"passIndex\"\":19,\"\"stationID\"\":\"\"NAO16\"\",\"\"timestamp\"\":\"\"2022-01-12 00:00\"\",\"\"passCharge\"\":2.5},{\"\"tagID\"\":\"\"EG7UR23GD\"\",\"\"passID\"\":843,\"\"passIndex\"\":20,\"\"stationID\"\":\"\"NAO20\"\",\"\"timestamp\"\":\"\"2022-01-12 00:00\"\",\"\"passCharge\"\":2.5},{\"\"tagID\"\":\"\"EGF1T2TAL\"\",\"\"passID\"\":879,\"\"passIndex\"\":23,\"\"stationID\"\":\"\"NAO26\"\",\"\"timestamp\"\":\"\"2022-01-13 00:00\"\",\"\"passCharge\"\":2.5},{\"\"tagID\"\":\"\"EGSEIMVIH\"\",\"\"passID\"\":868,\"\"passIndex\"\":21,\"\"stationID\"\":\"\"NAO11\"\",\"\"timestamp\"\":\"\"2022-01-13 00:00\"\",\"\"passCharge\"\":2.5},{\"\"tagID\"\":\"\"EGVWPVS7H\"\",\"\"passID\"\":869,\"\"passIndex\"\":22,\"\"stationID\"\":\"\"NAO30\"\",\"\"timestamp\"\":\"\"2022-01-13 00:00\"\",\"\"passCharge\"\":2.5},{\"\"tagID\"\":\"\"EGUT0CVS4\"\",\"\"passID\"\":950,\"\"passIndex\"\":24,\"\"stationID\"\":\"\"NAO41\"\",\"\"timestamp\"\":\"\"2022-01-14 00:00\"\",\"\"passCharge\"\":2.5},{\"\"tagID\"\":\"\"EG7UR23GD\"\",\"\"passID\"\":993,\"\"passIndex\"\":25,\"\"stationID\"\":\"\"NAO14\"\",\"\"timestamp\"\":\"\"2022-01-14 00:00\"\",\"\"passCharge\"\":2.5},{\"\"tagID\"\":\"\"EGF1T2TAL\"\",\"\"passID\"\":1002,\"\"passIndex\"\":26,\"\"stationID\"\":\"\"NAO03\"\",\"\"timestamp\"\":\"\"2022-01-14 00:00\"\",\"\"passCharge\"\":2.5},{\"\"tagID\"\":\"\"NO7PTX63C\"\",\"\"passID\"\":1460,\"\"passIndex\"\":32,\"\"stationID\"\":\"\"NAO04\"\",\"\"timestamp\"\":\"\"2022-03-05 00:00\"\",\"\"passCharge\"\":10},{\"\"tagID\"\":\"\"NAO09SKDGI\"\",\"\"passID\"\":1946,\"\"passIndex\"\":41,\"\"stationID\"\":\"\"NAO18\"\",\"\"timestamp\"\":\"\"2022-03-29 00:00\"\",\"\"passCharge\"\":2.5},{\"\"tagID\"\":\"\"OO7PZE9VI\"\",\"\"passID\"\":1783,\"\"passIndex\"\":39,\"\"stationID\"\":\"\"NAO03\"\",\"\"timestamp\"\":\"\"2022-05-05 00:00\"\",\"\"passCharge\"\":6.25},{\"\"tagID\"\":\"\"MOJCKJLTE\"\",\"\"passID\"\":1970,\"\"passIndex\"\":43,\"\"stationID\"\":\"\"NAO32\"\",\"\"timestamp\"\":\"\"2022-05-12 00:00\"\",\"\"passCharge\"\":1.25},{\"\"tagID\"\":\"\"NOQLL8OS9\"\",\"\"passID\"\":1234,\"\"passIndex\"\":28,\"\"stationID\"\":\"\"NAO37\"\",\"\"timestamp\"\":\"\"2022-05-23 00:00\"\",\"\"passCharge\"\":2.5},{\"\"tagID\"\":\"\"AMHJ7XVG0\"\",\"\"passID\"\":1663,\"\"passIndex\"\":35,\"\"stationID\"\":\"\"NAO12\"\",\"\"timestamp\"\":\"\"2022-05-26 00:00\"\",\"\"passCharge\"\":2.5},{\"\"tagID\"\":\"\"AMNT3W5UZ\"\",\"\"passID\"\":1985,\"\"passIndex\"\":44,\"\"stationID\"\":\"\"NAO01\"\",\"\"timestamp\"\":\"\"2022-06-15 00:00\"\",\"\"passCharge\"\":6.25},{\"\"tagID\"\":\"\"OO3KKV9RF\"\",\"\"passID\"\":1966,\"\"passIndex\"\":42,\"\"stationID\"\":\"\"NAO24\"\",\"\"timestamp\"\":\"\"2022-06-20 00:00\"\",\"\"passCharge\"\":6.25},{\"\"tagID\"\":\"\"OO3KKV9RF\"\",\"\"passID\"\":1588,\"\"passIndex\"\":34,\"\"stationID\"\":\"\"NAO12\"\",\"\"timestamp\"\":\"\"2022-07-14 00:00\"\",\"\"passCharge\"\":10},{\"\"tagID\"\":\"\"GEX7EEDTJ\"\",\"\"passID\"\":1863,\"\"passIndex\"\":40,\"\"stationID\"\":\"\"NAO26\"\",\"\"timestamp\"\":\"\"2022-09-18 00:00\"\",\"\"passCharge\"\":10},{\"\"tagID\"\":\"\"EGVWPVS7H\"\",\"\"passID\"\":1303,\"\"passIndex\"\":29,\"\"stationID\"\":\"\"NAO10\"\",\"\"timestamp\"\":\"\"2022-09-23 00:00\"\",\"\"passCharge\"\":6.25},{\"\"tagID\"\":\"\"KOIXA11DP\"\",\"\"passID\"\":1364,\"\"passIndex\"\":30,\"\"stationID\"\":\"\"NAO33\"\",\"\"timestamp\"\":\"\"2022-09-29 00:00\"\",\"\"passCharge\"\":10},{\"\"tagID\"\":\"\"NAOHL1N13J\"\",\"\"passID\"\":1682,\"\"passIndex\"\":36,\"\"stationID\"\":\"\"NAO27\"\",\"\"timestamp\"\":\"\"2022-09-30 00:00\"\",\"\"passCharge\"\":2.5},{\"\"tagID\"\":\"\"OO3KKV9RF\"\",\"\"passID\"\":1049,\"\"passIndex\"\":27,\"\"stationID\"\":\"\"NAO07\"\",\"\"timestamp\"\":\"\"2022-11-26 00:00\"\",\"\"passCharge\"\":10},{\"\"tagID\"\":\"\"NOX6GVWRD\"\",\"\"passID\"\":1698,\"\"passIndex\"\":37,\"\"stationID\"\":\"\"NAO09\"\",\"\"timestamp\"\":\"\"2022-11-30 00:00\"\",\"\"passCharge\"\":10},{\"\"tagID\"\":\"\"NOX6GVWRD\"\",\"\"passID\"\":1575,\"\"passIndex\"\":33,\"\"stationID\"\":\"\"NAO06\"\",\"\"timestamp\"\":\"\"2022-12-01 00:00\"\",\"\"passCharge\"\":1.25},{\"\"tagID\"\":\"\"OO3KKV9RF\"\",\"\"passID\"\":1373,\"\"passIndex\"\":31,\"\"stationID\"\":\"\"NAO16\"\",\"\"timestamp\"\":\"\"2022-12-17 00:00\"\",\"\"passCharge\"\":1.25},{\"\"tagID\"\":\"\"OOQ0OXFQ8\"\",\"\"passID\"\":1707,\"\"passIndex\"\":38,\"\"stationID\"\":\"\"NAO01\"\",\"\"timestamp\"\":\"\"2022-12-30 00:00\"\",\"\"passCharge\"\":1.25}]\""
+						},
+						{
+							"name": "Bad Request by Providing Invalid Date",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-OBSERVATORY-AUTH",
+										"value": "{{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseURL}}/passAnalysis/:stationOpID/:tagOpID/:date_from/:date_to?format=json",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"passAnalysis",
+										":stationOpID",
+										":tagOpID",
+										":date_from",
+										":date_to"
+									],
+									"query": [
+										{
+											"key": "format",
+											"value": "json",
+											"description": "The response format, either csv or json."
+										}
+									],
+									"variable": [
+										{
+											"key": "stationOpID",
+											"value": "NAO",
+											"description": "The operator ID of the toll station"
+										},
+										{
+											"key": "tagOpID",
+											"value": "EG",
+											"description": "The operator ID of the tag system"
+										},
+										{
+											"key": "date_from",
+											"value": "2022",
+											"description": "The starting date of the range."
+										},
+										{
+											"key": "date_to",
+											"value": "20221231",
+											"description": "The ending date of the range."
+										}
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": "{\n    \"status\": \"failed\",\n    \"info\": \"Invalid 'date_from' parameter. It should be in YYYYMMDD format.\"\n}"
+						},
+						{
+							"name": "Bad Request by Providing Invalid stationOpID",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-OBSERVATORY-AUTH",
+										"value": "{{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseURL}}/passAnalysis/:stationOpID/:tagOpID/:date_from/:date_to?format=json",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"passAnalysis",
+										":stationOpID",
+										":tagOpID",
+										":date_from",
+										":date_to"
+									],
+									"query": [
+										{
+											"key": "format",
+											"value": "json",
+											"description": "The response format, either csv or json."
+										}
+									],
+									"variable": [
+										{
+											"key": "stationOpID",
+											"value": "rehr64",
+											"description": "The operator ID of the toll station"
+										},
+										{
+											"key": "tagOpID",
+											"value": "EG",
+											"description": "The operator ID of the tag system"
+										},
+										{
+											"key": "date_from",
+											"value": "20220101",
+											"description": "The starting date of the range."
+										},
+										{
+											"key": "date_to",
+											"value": "20221231",
+											"description": "The ending date of the range."
+										}
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": "{\n    \"status\": \"failed\",\n    \"info\": \"Invalid station operator ID.\"\n}"
+						},
+						{
+							"name": "Bad Request by Providing Invalid tagOpID",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-OBSERVATORY-AUTH",
+										"value": "{{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseURL}}/passAnalysis/:stationOpID/:tagOpID/:date_from/:date_to?format=json",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"passAnalysis",
+										":stationOpID",
+										":tagOpID",
+										":date_from",
+										":date_to"
+									],
+									"query": [
+										{
+											"key": "format",
+											"value": "json",
+											"description": "The response format, either csv or json."
+										}
+									],
+									"variable": [
+										{
+											"key": "stationOpID",
+											"value": "NAO",
+											"description": "The operator ID of the toll station"
+										},
+										{
+											"key": "tagOpID",
+											"value": "hdr6u",
+											"description": "The operator ID of the tag system"
+										},
+										{
+											"key": "date_from",
+											"value": "20220101",
+											"description": "The starting date of the range."
+										},
+										{
+											"key": "date_to",
+											"value": "20221231",
+											"description": "The ending date of the range."
+										}
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": "{\n    \"status\": \"failed\",\n    \"info\": \"Invalid tag operator ID.\"\n}"
+						},
+						{
+							"name": "No Content by Providing non-existent stationOpID",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-OBSERVATORY-AUTH",
+										"value": "{{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseURL}}/passAnalysis/:stationOpID/:tagOpID/:date_from/:date_to?format=json",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"passAnalysis",
+										":stationOpID",
+										":tagOpID",
+										":date_from",
+										":date_to"
+									],
+									"query": [
+										{
+											"key": "format",
+											"value": "json",
+											"description": "The response format, either csv or json."
+										}
+									],
+									"variable": [
+										{
+											"key": "stationOpID",
+											"value": "MAO",
+											"description": "The operator ID of the toll station"
+										},
+										{
+											"key": "tagOpID",
+											"value": "EG",
+											"description": "The operator ID of the tag system"
+										},
+										{
+											"key": "date_from",
+											"value": "20220101",
+											"description": "The starting date of the range."
+										},
+										{
+											"key": "date_to",
+											"value": "20221231",
+											"description": "The ending date of the range."
+										}
+									]
+								}
+							},
+							"status": "No Content",
+							"code": 204,
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": null
+						},
+						{
+							"name": "No Content by Providing non-existent tagOpID",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-OBSERVATORY-AUTH",
+										"value": "{{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseURL}}/passAnalysis/:stationOpID/:tagOpID/:date_from/:date_to?format=json",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"passAnalysis",
+										":stationOpID",
+										":tagOpID",
+										":date_from",
+										":date_to"
+									],
+									"query": [
+										{
+											"key": "format",
+											"value": "json",
+											"description": "The response format, either csv or json."
+										}
+									],
+									"variable": [
+										{
+											"key": "stationOpID",
+											"value": "NAO",
+											"description": "The operator ID of the toll station"
+										},
+										{
+											"key": "tagOpID",
+											"value": "MAO",
+											"description": "The operator ID of the tag system"
+										},
+										{
+											"key": "date_from",
+											"value": "20220101",
+											"description": "The starting date of the range."
+										},
+										{
+											"key": "date_to",
+											"value": "20221231",
+											"description": "The ending date of the range."
+										}
+									]
+								}
+							},
+							"status": "No Content",
+							"code": 204,
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": null
+						}
+					]
+				},
+				{
+					"name": "passesCost",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Content-Type is application/json\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\", \"application/json; charset=utf-8\");",
+									"});",
+									"",
+									"pm.test(\"Response body matches strict JSON schema\", function () {",
+									"    const jsonResponse = pm.response.json();",
+									"",
+									"    const schema = {",
+									"        type: \"object\",",
+									"        properties: {",
+									"            tollOpID: { type: \"string\" },",
+									"            tagOpID: { type: \"string\" },",
+									"            requestTimestamp: { type: \"string\" },",
+									"            periodFrom: { type: \"string\" },",
+									"            periodTo: { type: \"string\" },",
+									"            nPasses: {type: \"integer\"},",
+									"            passesCost: {type: \"integer\"}",
+									"        },",
+									"        required: [\"tollOpID\", \"tagOpID\", \"requestTimestamp\", \"periodFrom\", \"periodTo\", \"nPasses\", \"passesCost\"],",
+									"        additionalProperties: false ",
+									"    };",
+									"",
+									"    pm.expect(jsonResponse).to.be.jsonSchema(schema);",
+									"});",
+									"",
+									"pm.test(\"Content-Type is text/csv\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\", \"text/csv; charset=utf-8\");",
+									"});",
+									"",
+									"pm.test(\"Response body is in valid CSV format\", function () {",
+									"    const csv = pm.response.text();",
+									"",
+									"    // Check if CSV format contains at least one line break, indicating multiple rows",
+									"    pm.expect(csv).to.include('\\n'); // Check if there's more than one row in the CSV",
+									"    pm.expect(csv).to.include(','); // Check if there are commas separating columns",
+									"    ",
+									"    // Ensure the headers are present in the first line",
+									"    const headers = csv.split('\\n')[0]; // Extract the first row (headers)",
+									"    pm.expect(headers).to.include('\"tollOpID\"');",
+									"    pm.expect(headers).to.include('\"tagOpID\"');",
+									"    pm.expect(headers).to.include('\"requestTimestamp\"');",
+									"    pm.expect(headers).to.include('\"periodFrom\"');",
+									"    pm.expect(headers).to.include('\"periodTo\"');",
+									"    pm.expect(headers).to.include('\"nPasses\"');",
+									"    pm.expect(headers).to.include('\"passesCost\"');",
+									"});",
+									"",
+									"pm.test(\"Response status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Response status code is 204\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									"",
+									"pm.test(\"Response status code is 500\", function () {",
+									"    pm.response.to.have.status(500);",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-OBSERVATORY-AUTH",
+								"value": "{{token}}",
+								"description": "The X-OBSERVATORY-AUTH header is used for authentication. Clients must provide a valid authentication token in the X-OBSERVATORY-AUTH header when making requests to endpoints that require authentication.",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/passesCost/:tollOpID/:tagOpID/:date_from/:date_to?format=json",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"passesCost",
+								":tollOpID",
+								":tagOpID",
+								":date_from",
+								":date_to"
+							],
+							"query": [
+								{
+									"key": "format",
+									"value": "json",
+									"description": "The response format, either csv or json."
+								}
+							],
+							"variable": [
+								{
+									"key": "tollOpID",
+									"value": "NAO",
+									"description": "The ID of the toll operator"
+								},
+								{
+									"key": "tagOpID",
+									"value": "EG",
+									"description": "The operator ID of the tag system"
+								},
+								{
+									"key": "date_from",
+									"value": "20220101",
+									"description": "The starting date of the range"
+								},
+								{
+									"key": "date_to",
+									"value": "20221231",
+									"description": "The ending date of the range"
+								}
+							]
+						},
+						"description": "This endpoint retrieves the total cost of passes processed by a specific toll operator and tag operator within a given date range. It requires the `tollOpID`, `tagOpID`, `date_from`, and `date_to` parameters."
+					},
+					"response": [
+						{
+							"name": "Successful Call Using JSON Format",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-OBSERVATORY-AUTH",
+										"value": "",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:9115/api/passesCost/:tollOpID/:tagOpID/:date_from/:date_to?format=json",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "9115",
+									"path": [
+										"api",
+										"passesCost",
+										":tollOpID",
+										":tagOpID",
+										":date_from",
+										":date_to"
+									],
+									"query": [
+										{
+											"key": "format",
+											"value": "json",
+											"description": "The response format, either csv or json."
+										}
+									],
+									"variable": [
+										{
+											"key": "tollOpID",
+											"value": "NAO",
+											"description": "The ID of the toll operator"
+										},
+										{
+											"key": "tagOpID",
+											"value": "EG",
+											"description": "The operator ID of the tag system"
+										},
+										{
+											"key": "date_from",
+											"value": "20220101",
+											"description": "The starting date of the range"
+										},
+										{
+											"key": "date_to",
+											"value": "20221231",
+											"description": "The ending date of the range"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": "{\n    \"tollOpID\": \"NAO\",\n    \"tagOpID\": \"EG\",\n    \"requestTimestamp\": \"2025-02-09 23:15\",\n    \"periodFrom\": \"2022-01-01\",\n    \"periodTo\": \"2022-12-31\",\n    \"nPasses\": 44,\n    \"passesCost\": 165\n}"
+						},
+						{
+							"name": "Successful Call Using CSV Format",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-OBSERVATORY-AUTH",
+										"value": "{{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseURL}}/passesCost/:tollOpID/:tagOpID/:date_from/:date_to?format=csv",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"passesCost",
+										":tollOpID",
+										":tagOpID",
+										":date_from",
+										":date_to"
+									],
+									"query": [
+										{
+											"key": "format",
+											"value": "csv",
+											"description": "The response format, either csv or json."
+										}
+									],
+									"variable": [
+										{
+											"key": "tollOpID",
+											"value": "NAO",
+											"description": "The ID of the toll operator"
+										},
+										{
+											"key": "tagOpID",
+											"value": "EG",
+											"description": "The operator ID of the tag system"
+										},
+										{
+											"key": "date_from",
+											"value": "20220101",
+											"description": "The starting date of the range"
+										},
+										{
+											"key": "date_to",
+											"value": "20221231",
+											"description": "The ending date of the range"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": "\"tollOpID\",\"tagOpID\",\"requestTimestamp\",\"periodFrom\",\"periodTo\",\"nPasses\",\"passesCost\"\n\"NAO\",\"EG\",\"2025-02-09 23:16\",\"2022-01-01\",\"2022-12-31\",44,165"
+						},
+						{
+							"name": "Bad Request by Providing Invalid Date",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-OBSERVATORY-AUTH",
+										"value": "{{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseURL}}/passesCost/:tollOpID/:tagOpID/:date_from/:date_to?format=",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"passesCost",
+										":tollOpID",
+										":tagOpID",
+										":date_from",
+										":date_to"
+									],
+									"query": [
+										{
+											"key": "format",
+											"value": "",
+											"description": "The response format, either csv or json."
+										}
+									],
+									"variable": [
+										{
+											"key": "tollOpID",
+											"value": "NAO",
+											"description": "The ID of the toll operator"
+										},
+										{
+											"key": "tagOpID",
+											"value": "EG",
+											"description": "The operator ID of the tag system"
+										},
+										{
+											"key": "date_from",
+											"value": "2022",
+											"description": "The starting date of the range"
+										},
+										{
+											"key": "date_to",
+											"value": "20221231",
+											"description": "The ending date of the range"
+										}
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": "{\n    \"status\": \"failed\",\n    \"info\": \"Invalid 'date_from' parameter. It should be in YYYYMMDD format.\"\n}"
+						},
+						{
+							"name": "Bad Request by Providing Invalid tollOpID",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-OBSERVATORY-AUTH",
+										"value": "{{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseURL}}/passesCost/:tollOpID/:tagOpID/:date_from/:date_to?format=",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"passesCost",
+										":tollOpID",
+										":tagOpID",
+										":date_from",
+										":date_to"
+									],
+									"query": [
+										{
+											"key": "format",
+											"value": "",
+											"description": "The response format, either csv or json."
+										}
+									],
+									"variable": [
+										{
+											"key": "tollOpID",
+											"value": "g2tg",
+											"description": "The ID of the toll operator"
+										},
+										{
+											"key": "tagOpID",
+											"value": "EG",
+											"description": "The operator ID of the tag system"
+										},
+										{
+											"key": "date_from",
+											"value": "20220101",
+											"description": "The starting date of the range"
+										},
+										{
+											"key": "date_to",
+											"value": "20221231",
+											"description": "The ending date of the range"
+										}
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": "{\n    \"status\": \"failed\",\n    \"info\": \"Invalid toll operator ID.\"\n}"
+						},
+						{
+							"name": "Bad Request by Providing Invalid tagOpID",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-OBSERVATORY-AUTH",
+										"value": "{{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseURL}}/passesCost/:tollOpID/:tagOpID/:date_from/:date_to?format=",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"passesCost",
+										":tollOpID",
+										":tagOpID",
+										":date_from",
+										":date_to"
+									],
+									"query": [
+										{
+											"key": "format",
+											"value": "",
+											"description": "The response format, either csv or json."
+										}
+									],
+									"variable": [
+										{
+											"key": "tollOpID",
+											"value": "NAO",
+											"description": "The ID of the toll operator"
+										},
+										{
+											"key": "tagOpID",
+											"value": "bdf5",
+											"description": "The operator ID of the tag system"
+										},
+										{
+											"key": "date_from",
+											"value": "20220101",
+											"description": "The starting date of the range"
+										},
+										{
+											"key": "date_to",
+											"value": "20221231",
+											"description": "The ending date of the range"
+										}
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": "{\n    \"status\": \"failed\",\n    \"info\": \"Invalid tag operator ID.\"\n}"
+						},
+						{
+							"name": "No Content by Providing non-existent tollOpID",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-OBSERVATORY-AUTH",
+										"value": "{{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseURL}}/passesCost/:tollOpID/:tagOpID/:date_from/:date_to?format=",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"passesCost",
+										":tollOpID",
+										":tagOpID",
+										":date_from",
+										":date_to"
+									],
+									"query": [
+										{
+											"key": "format",
+											"value": "",
+											"description": "The response format, either csv or json."
+										}
+									],
+									"variable": [
+										{
+											"key": "tollOpID",
+											"value": "MOA",
+											"description": "The ID of the toll operator"
+										},
+										{
+											"key": "tagOpID",
+											"value": "EG",
+											"description": "The operator ID of the tag system"
+										},
+										{
+											"key": "date_from",
+											"value": "20220101",
+											"description": "The starting date of the range"
+										},
+										{
+											"key": "date_to",
+											"value": "20221231",
+											"description": "The ending date of the range"
+										}
+									]
+								}
+							},
+							"status": "No Content",
+							"code": 204,
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": null
+						},
+						{
+							"name": "No Content by Providing non-existent tagOpID",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-OBSERVATORY-AUTH",
+										"value": "{{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseURL}}/passesCost/:tollOpID/:tagOpID/:date_from/:date_to?format=json",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"passesCost",
+										":tollOpID",
+										":tagOpID",
+										":date_from",
+										":date_to"
+									],
+									"query": [
+										{
+											"key": "format",
+											"value": "json",
+											"description": "The response format, either csv or json."
+										}
+									],
+									"variable": [
+										{
+											"key": "tollOpID",
+											"value": "NAO",
+											"description": "The ID of the toll operator"
+										},
+										{
+											"key": "tagOpID",
+											"value": "MOA",
+											"description": "The operator ID of the tag system"
+										},
+										{
+											"key": "date_from",
+											"value": "20220101",
+											"description": "The starting date of the range"
+										},
+										{
+											"key": "date_to",
+											"value": "20221231",
+											"description": "The ending date of the range"
+										}
+									]
+								}
+							},
+							"status": "No Content",
+							"code": 204,
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": null
+						}
+					]
+				},
+				{
+					"name": "chargesBy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Content-Type is application/json\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\", \"application/json; charset=utf-8\");",
+									"});",
+									"",
+									"pm.test(\"Response body matches strict JSON schema\", function () {",
+									"    const jsonResponse = pm.response.json();",
+									"",
+									"    const schema = {",
+									"        type: \"object\",",
+									"        properties: {",
+									"            tollOpID: { type: \"string\" },",
+									"            requestTimestamp: { type: \"string\" },",
+									"            periodFrom: { type: \"string\" },",
+									"            periodTo: { type: \"string\" },",
+									"            VOpList: {",
+									"                type: \"array\",",
+									"                items: {",
+									"                    type: \"object\",",
+									"                    properties: {",
+									"                        visitingOpID: { type: \"string\" },",
+									"                        nPasses: { type: \"integer\" },",
+									"                        passesCost: { type: \"number\" }",
+									"                    },",
+									"                    required: [\"visitingOpID\", \"nPasses\", \"passesCost\"],",
+									"                    additionalProperties: false",
+									"                }",
+									"            }",
+									"        },",
+									"        required: [\"tollOpID\", \"requestTimestamp\", \"periodFrom\", \"periodTo\", \"VOpList\"],",
+									"        additionalProperties: false ",
+									"    };",
+									"",
+									"    pm.expect(jsonResponse).to.be.jsonSchema(schema);",
+									"});",
+									"",
+									"pm.test(\"Content-Type is text/csv\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\", \"text/csv; charset=utf-8\");",
+									"});",
+									"",
+									"pm.test(\"Response body is in valid CSV format\", function () {",
+									"    const csv = pm.response.text();",
+									"",
+									"    // Check if CSV format contains at least one line break, indicating multiple rows",
+									"    pm.expect(csv).to.include('\\n'); // Check if there's more than one row in the CSV",
+									"    pm.expect(csv).to.include(','); // Check if there are commas separating columns",
+									"    ",
+									"    // Ensure the headers are present in the first line",
+									"    const headers = csv.split('\\n')[0]; // Extract the first row (headers)",
+									"    pm.expect(headers).to.include('\"tollOpID\"');",
+									"    pm.expect(headers).to.include('\"requestTimestamp\"');",
+									"    pm.expect(headers).to.include('\"periodFrom\"');",
+									"    pm.expect(headers).to.include('\"periodTo\"');",
+									"    pm.expect(headers).to.include('\"VOpList\"');",
+									"});",
+									"",
+									"pm.test(\"Response status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Response status code is 204\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									"",
+									"pm.test(\"Response status code is 500\", function () {",
+									"    pm.response.to.have.status(500);",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-OBSERVATORY-AUTH",
+								"value": "{{token}}",
+								"description": "The X-OBSERVATORY-AUTH header is used for authentication. Clients must provide a valid authentication token in the X-OBSERVATORY-AUTH header when making requests to endpoints that require authentication.",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/chargesBy/:tollOpID/:date_from/:date_to?format=json",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"chargesBy",
+								":tollOpID",
+								":date_from",
+								":date_to"
+							],
+							"query": [
+								{
+									"key": "format",
+									"value": "json",
+									"description": "The response format, either csv or json."
+								}
+							],
+							"variable": [
+								{
+									"key": "tollOpID",
+									"value": "AM",
+									"description": "The ID of the toll operator."
+								},
+								{
+									"key": "date_from",
+									"value": "20220101",
+									"description": "The starting date of the range."
+								},
+								{
+									"key": "date_to",
+									"value": "20221231",
+									"description": "The ending date of the range."
+								}
+							]
+						},
+						"description": "This endpoint retrieves the charges applied by a specific toll operator within a given date range. It requires `tollOpID`, `date_from`, and `date_to` parameters to filter the results."
+					},
+					"response": [
+						{
+							"name": "Successful Call Using JSON Format",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-OBSERVATORY-AUTH",
+										"value": "",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:9115/api/chargesBy/:tollOpID/:date_from/:date_to?format=json",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "9115",
+									"path": [
+										"api",
+										"chargesBy",
+										":tollOpID",
+										":date_from",
+										":date_to"
+									],
+									"query": [
+										{
+											"key": "format",
+											"value": "json",
+											"description": "The response format, either csv or json."
+										}
+									],
+									"variable": [
+										{
+											"key": "tollOpID",
+											"value": "NAO",
+											"description": "The ID of the toll operator"
+										},
+										{
+											"key": "date_from",
+											"value": "20220101",
+											"description": "The starting date of the range"
+										},
+										{
+											"key": "date_to",
+											"value": "20221231",
+											"description": "The ending date of the range"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": "{\n    \"tollOpID\": \"NAO\",\n    \"requestTimestamp\": \"2025-02-08 07:00\",\n    \"periodFrom\": \"2022-01-01\",\n    \"periodTo\": \"2022-12-31\",\n    \"VOpList\": [\n        {\n            \"nPasses\": 18,\n            \"passesCost\": 61.2,\n            \"visitingOpID\": \"GE\"\n        },\n        {\n            \"nPasses\": 44,\n            \"passesCost\": 165,\n            \"visitingOpID\": \"EG\"\n        },\n        {\n            \"nPasses\": 25,\n            \"passesCost\": 106.2,\n            \"visitingOpID\": \"KO\"\n        },\n        {\n            \"nPasses\": 17,\n            \"passesCost\": 88.8,\n            \"visitingOpID\": \"MO\"\n        },\n        {\n            \"nPasses\": 34,\n            \"passesCost\": 135,\n            \"visitingOpID\": \"AM\"\n        },\n        {\n            \"nPasses\": 25,\n            \"passesCost\": 93.8,\n            \"visitingOpID\": \"OO\"\n        },\n        {\n            \"nPasses\": 28,\n            \"passesCost\": 102.5,\n            \"visitingOpID\": \"NO\"\n        }\n    ]\n}"
+						},
+						{
+							"name": "Successful Call Using CSV Format",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-OBSERVATORY-AUTH",
+										"value": "{{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseURL}}/chargesBy/:tollOpID/:date_from/:date_to?format=csv",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"chargesBy",
+										":tollOpID",
+										":date_from",
+										":date_to"
+									],
+									"query": [
+										{
+											"key": "format",
+											"value": "csv",
+											"description": "The response format, either csv or json."
+										}
+									],
+									"variable": [
+										{
+											"key": "tollOpID",
+											"value": "NAO",
+											"description": "The ID of the toll operator"
+										},
+										{
+											"key": "date_from",
+											"value": "20220101",
+											"description": "The starting date of the range"
+										},
+										{
+											"key": "date_to",
+											"value": "20221231",
+											"description": "The ending date of the range"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": "\"tollOpID\",\"requestTimestamp\",\"periodFrom\",\"periodTo\",\"VOpList\"\n\"NAO\",\"2025-02-08 07:01\",\"2022-01-01\",\"2022-12-31\",\"[{\"\"nPasses\"\":18,\"\"passesCost\"\":61.2,\"\"visitingOpID\"\":\"\"GE\"\"},{\"\"nPasses\"\":44,\"\"passesCost\"\":165,\"\"visitingOpID\"\":\"\"EG\"\"},{\"\"nPasses\"\":25,\"\"passesCost\"\":106.2,\"\"visitingOpID\"\":\"\"KO\"\"},{\"\"nPasses\"\":17,\"\"passesCost\"\":88.8,\"\"visitingOpID\"\":\"\"MO\"\"},{\"\"nPasses\"\":34,\"\"passesCost\"\":135,\"\"visitingOpID\"\":\"\"AM\"\"},{\"\"nPasses\"\":25,\"\"passesCost\"\":93.8,\"\"visitingOpID\"\":\"\"OO\"\"},{\"\"nPasses\"\":28,\"\"passesCost\"\":102.5,\"\"visitingOpID\"\":\"\"NO\"\"}]\""
+						},
+						{
+							"name": "Bad Request by Providing Invalid Date",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-OBSERVATORY-AUTH",
+										"value": "{{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseURL}}/chargesBy/:tollOpID/:date_from/:date_to?format=json",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"chargesBy",
+										":tollOpID",
+										":date_from",
+										":date_to"
+									],
+									"query": [
+										{
+											"key": "format",
+											"value": "json",
+											"description": "The response format, either csv or json."
+										}
+									],
+									"variable": [
+										{
+											"key": "tollOpID",
+											"value": "AM",
+											"description": "The ID of the toll operator"
+										},
+										{
+											"key": "date_from",
+											"value": "2022",
+											"description": "The starting date of the range"
+										},
+										{
+											"key": "date_to",
+											"value": "20221231",
+											"description": "The ending date of the range"
+										}
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": "{\n    \"status\": \"failed\",\n    \"info\": \"Invalid 'date_from' parameter. It should be in YYYYMMDD format.\"\n}"
+						},
+						{
+							"name": "Bad Request by Providing Invalid OpID",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-OBSERVATORY-AUTH",
+										"value": "{{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseURL}}/chargesBy/:tollOpID/:date_from/:date_to?format=json",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"chargesBy",
+										":tollOpID",
+										":date_from",
+										":date_to"
+									],
+									"query": [
+										{
+											"key": "format",
+											"value": "json",
+											"description": "The response format, either csv or json."
+										}
+									],
+									"variable": [
+										{
+											"key": "tollOpID",
+											"value": "Am36",
+											"description": "The ID of the toll operator"
+										},
+										{
+											"key": "date_from",
+											"value": "2022",
+											"description": "The starting date of the range"
+										},
+										{
+											"key": "date_to",
+											"value": "20221231",
+											"description": "The ending date of the range"
+										}
+									]
+								}
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": "{\n    \"status\": \"failed\",\n    \"info\": \"Invalid station operator ID.\"\n}"
+						},
+						{
+							"name": "No Content by providing non-existent tollOpID",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-OBSERVATORY-AUTH",
+										"value": "{{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseURL}}/chargesBy/:tollOpID/:date_from/:date_to?format=json",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"chargesBy",
+										":tollOpID",
+										":date_from",
+										":date_to"
+									],
+									"query": [
+										{
+											"key": "format",
+											"value": "json",
+											"description": "The response format, either csv or json."
+										}
+									],
+									"variable": [
+										{
+											"key": "tollOpID",
+											"value": "OM",
+											"description": "The ID of the toll operator"
+										},
+										{
+											"key": "date_from",
+											"value": "20220101",
+											"description": "The starting date of the range"
+										},
+										{
+											"key": "date_to",
+											"value": "20221231",
+											"description": "The ending date of the range"
+										}
+									]
+								}
+							},
+							"status": "No Content",
+							"code": 204,
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": null
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Website Endpoints",
+			"item": [
+				{
+					"name": "NotSettled",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-OBSERVATORY-AUTH",
+								"value": "{{token}}",
+								"description": "The X-OBSERVATORY-AUTH header is used for authentication. Clients must provide a valid authentication token in the X-OBSERVATORY-AUTH header when making requests to endpoints that require authentication.",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": []
+						},
+						"url": {
+							"raw": "{{baseURL}}/notsettled/:id?format=",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"notsettled",
+								":id"
+							],
+							"query": [
+								{
+									"key": "format",
+									"value": "",
+									"description": "The response format, either csv or json."
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "EG",
+									"description": "The ID of the operator."
+								}
+							]
+						},
+						"description": "This endpoint retrieves the unsettled debts of an operator, along with the operators they are owed to. It requires the `id` parameter."
+					},
+					"response": []
+				},
+				{
+					"name": "TotalNotSettled",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-OBSERVATORY-AUTH",
+								"value": "{{token}}",
+								"description": "The X-OBSERVATORY-AUTH header is used for authentication. Clients must provide a valid authentication token in the X-OBSERVATORY-AUTH header when making requests to endpoints that require authentication.",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/totalnotsettled/:id?format=",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"totalnotsettled",
+								":id"
+							],
+							"query": [
+								{
+									"key": "format",
+									"value": "",
+									"description": "The response format, either csv or json."
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "AM",
+									"description": "The ID of the operator."
+								}
+							]
+						},
+						"description": "This endpoint retrieves the total unsettled debt amount for an operator. It requires the `id` parameter."
+					},
+					"response": []
+				},
+				{
+					"name": "NotVerified",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-OBSERVATORY-AUTH",
+								"value": "{{token}}",
+								"description": "The X-OBSERVATORY-AUTH header is used for authentication. Clients must provide a valid authentication token in the X-OBSERVATORY-AUTH header when making requests to endpoints that require authentication.",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/notverified/:id?format=",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"notverified",
+								":id"
+							],
+							"query": [
+								{
+									"key": "format",
+									"value": "",
+									"description": "The response format, either csv or json."
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "AM",
+									"description": "The ID of the operator."
+								}
+							]
+						},
+						"description": "This endpoint retrieves debts that have been settled by other operators but not yet verified by the operator these amounts are owed to. It also shows the operators that have settled these amounts. It requires the `id` parameter."
+					},
+					"response": []
+				},
+				{
+					"name": "TotalNotVerified",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-OBSERVATORY-AUTH",
+								"value": "{{token}}",
+								"description": "The X-OBSERVATORY-AUTH header is used for authentication. Clients must provide a valid authentication token in the X-OBSERVATORY-AUTH header when making requests to endpoints that require authentication.",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/totalnotverified/:id?format=",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"totalnotverified",
+								":id"
+							],
+							"query": [
+								{
+									"key": "format",
+									"value": "",
+									"description": "The response format, either csv or json."
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "AM",
+									"description": "The ID of the operator."
+								}
+							]
+						},
+						"description": "This endpoint retrieves the total amount of debts that have been settled by other operators but not yet verified by the operator this amount is owed to. It requires the `id` parameter."
+					},
+					"response": []
+				},
+				{
+					"name": "SettleDebt",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-OBSERVATORY-AUTH",
+								"value": "{{token}}",
+								"description": "The X-OBSERVATORY-AUTH header is used for authentication. Clients must provide a valid authentication token in the X-OBSERVATORY-AUTH header when making requests to endpoints that require authentication.",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/settledebt/:debtorId/:creditorId?format=",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"settledebt",
+								":debtorId",
+								":creditorId"
+							],
+							"query": [
+								{
+									"key": "format",
+									"value": "",
+									"description": "The response format, either csv or json."
+								}
+							],
+							"variable": [
+								{
+									"key": "debtorId",
+									"value": "OO",
+									"description": "The ID of the operator that is the debtor."
+								},
+								{
+									"key": "creditorId",
+									"value": "AM",
+									"description": "The ID of the operator that is the creditor."
+								}
+							]
+						},
+						"description": "This endpoint settles an operator's debt. It requires the `debtorId` and the `creditorId` parameters."
+					},
+					"response": []
+				},
+				{
+					"name": "VerifyPayment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-OBSERVATORY-AUTH",
+								"value": "{{token}}",
+								"description": "The X-OBSERVATORY-AUTH header is used for authentication. Clients must provide a valid authentication token in the X-OBSERVATORY-AUTH header when making requests to endpoints that require authentication.",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/verifypayment/:creditorId/:debtorId?format=",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"verifypayment",
+								":creditorId",
+								":debtorId"
+							],
+							"query": [
+								{
+									"key": "format",
+									"value": "",
+									"description": "The response format, either csv or json."
+								}
+							],
+							"variable": [
+								{
+									"key": "creditorId",
+									"value": "AM",
+									"description": "The ID of the operator that is the creditor."
+								},
+								{
+									"key": "debtorId",
+									"value": "EG",
+									"description": "The ID of the operator that is the debtor."
+								}
+							]
+						},
+						"description": "This endpoint verifies that a debt has been settled. It requires the `creditorId` and the `debtorId` parameters."
+					},
+					"response": []
+				},
+				{
+					"name": "HistoryDebt",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-OBSERVATORY-AUTH",
+								"value": "{{token}}",
+								"description": "The X-OBSERVATORY-AUTH header is used for authentication. Clients must provide a valid authentication token in the X-OBSERVATORY-AUTH header when making requests to endpoints that require authentication.",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/historydebt/:debtorId/:creditorId?format=",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"historydebt",
+								":debtorId",
+								":creditorId"
+							],
+							"query": [
+								{
+									"key": "format",
+									"value": "",
+									"description": "The response format, either csv or json."
+								}
+							],
+							"variable": [
+								{
+									"key": "debtorId",
+									"value": "EG",
+									"description": "The ID of the operator that is the debtor."
+								},
+								{
+									"key": "creditorId",
+									"value": "NAO",
+									"description": "The ID of the operator that is the creditor."
+								}
+							]
+						},
+						"description": "This endpoint retrieves the monthly debt history of an operator for the last year. It requires the `debtorId` and the `creditorId` parameters."
+					},
+					"response": []
+				},
+				{
+					"name": "TrafficVariation",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-OBSERVATORY-AUTH",
+								"value": "{{token}}",
+								"description": "The X-OBSERVATORY-AUTH header is used for authentication. Clients must provide a valid authentication token in the X-OBSERVATORY-AUTH header when making requests to endpoints that require authentication.",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/trafficvariation/:id/:date_from/:date_to?format=",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"trafficvariation",
+								":id",
+								":date_from",
+								":date_to"
+							],
+							"query": [
+								{
+									"key": "format",
+									"value": "",
+									"description": "The response format, either csv or json."
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "EG",
+									"description": "The ID of the operator."
+								},
+								{
+									"key": "date_from",
+									"value": "2022-01-01",
+									"description": "The starting date of the range."
+								},
+								{
+									"key": "date_to",
+									"value": "2025-01-01",
+									"description": "The ending date of the range."
+								}
+							]
+						},
+						"description": "This endpoint retrieves the monthly total toll passes from roads that belong to a specific operator within a given date range. It requires the `id` , `date_from` and `date_to` parameters."
+					},
+					"response": []
+				},
+				{
+					"name": "RoadsPerOperator",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-OBSERVATORY-AUTH",
+								"value": "{{token}}",
+								"description": "The X-OBSERVATORY-AUTH header is used for authentication. Clients must provide a valid authentication token in the X-OBSERVATORY-AUTH header when making requests to endpoints that require authentication.",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/roadsperoperator/:id?format=",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"roadsperoperator",
+								":id"
+							],
+							"query": [
+								{
+									"key": "format",
+									"value": "",
+									"description": "The response format, either csv or json."
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "OO",
+									"description": "The ID of the operator."
+								}
+							]
+						},
+						"description": "This endpoint retrieves the roads that belong to a specific operator. It requires the `id` parameter."
+					},
+					"response": []
+				},
+				{
+					"name": "TrafficVariationPerRoad",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-OBSERVATORY-AUTH",
+								"value": "{{token}}",
+								"description": "The X-OBSERVATORY-AUTH header is used for authentication. Clients must provide a valid authentication token in the X-OBSERVATORY-AUTH header when making requests to endpoints that require authentication.",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/trafficvariationperroad/:id/:road/:date_from/:date_to?format=",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"trafficvariationperroad",
+								":id",
+								":road",
+								":date_from",
+								":date_to"
+							],
+							"query": [
+								{
+									"key": "format",
+									"value": "",
+									"description": "The response format, either csv or json."
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "NAO",
+									"description": "The ID of the operator."
+								},
+								{
+									"key": "road",
+									"value": "12",
+									"description": "The ID of the road."
+								},
+								{
+									"key": "date_from",
+									"value": "2022-01-01",
+									"description": "The starting date of the range."
+								},
+								{
+									"key": "date_to",
+									"value": "2023-01-31",
+									"description": "The ending date of the range."
+								}
+							]
+						},
+						"description": "This endpoint retrieves the monthly total toll passes from a given road that belongs to a specific operator within a given date range. It requires the `id` , `road` , `date_from` and `date_to` parameters."
+					},
+					"response": []
+				},
+				{
+					"name": "TrafficDistribution",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-OBSERVATORY-AUTH",
+								"value": "{{token}}",
+								"description": "The X-OBSERVATORY-AUTH header is used for authentication. Clients must provide a valid authentication token in the X-OBSERVATORY-AUTH header when making requests to endpoints that require authentication.",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/trafficdistribution/:id/:date_from/:date_to?format=",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"trafficdistribution",
+								":id",
+								":date_from",
+								":date_to"
+							],
+							"query": [
+								{
+									"key": "format",
+									"value": "",
+									"description": "The response format, either csv or json."
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "EG",
+									"description": "The ID of the operator."
+								},
+								{
+									"key": "date_from",
+									"value": "2022-01-01",
+									"description": "The starting date of the range."
+								},
+								{
+									"key": "date_to",
+									"value": "2023-01-31",
+									"description": "The ending date of the range."
+								}
+							]
+						},
+						"description": "This endpoint retrieves the total toll passes for each road that belongs to a specific operator within a given date range. It requires the `id` , `date_from` and `date_to` parameters."
+					},
+					"response": []
+				},
+				{
+					"name": "MostPopularTollBooths",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-OBSERVATORY-AUTH",
+								"value": "{{token}}",
+								"description": "The X-OBSERVATORY-AUTH header is used for authentication. Clients must provide a valid authentication token in the X-OBSERVATORY-AUTH header when making requests to endpoints that require authentication.",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/mostpopulartollbooths/:id?format=",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"mostpopulartollbooths",
+								":id"
+							],
+							"query": [
+								{
+									"key": "format",
+									"value": "",
+									"description": "The response format, either csv or json."
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "EG",
+									"description": "The ID of the operator."
+								}
+							]
+						},
+						"description": "This endpoint retrieves the five most popular toll booths based on their total toll passes given the operator these toll stations belong to. It requires the `id` parameter."
+					},
+					"response": []
+				},
+				{
+					"name": "DebtHistoryChart",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-OBSERVATORY-AUTH",
+								"value": "{{token}}",
+								"description": "The X-OBSERVATORY-AUTH header is used for authentication. Clients must provide a valid authentication token in the X-OBSERVATORY-AUTH header when making requests to endpoints that require authentication.",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/debthistorychart/:id/:date_from/:date_to?format=",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"debthistorychart",
+								":id",
+								":date_from",
+								":date_to"
+							],
+							"query": [
+								{
+									"key": "format",
+									"value": "",
+									"description": "The response format, either csv or json."
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "NAO",
+									"description": "The ID of the operator."
+								},
+								{
+									"key": "date_from",
+									"value": "2022-01-01",
+									"description": "The starting date of the range."
+								},
+								{
+									"key": "date_to",
+									"value": "2023-01-31",
+									"description": "The ending date of the range."
+								}
+							]
+						},
+						"description": "This endpoint retrieves the monthly debt history of an operator within a given date range. It requires the `id` , `date_from` and `date_to` parameters."
+					},
+					"response": []
+				},
+				{
+					"name": "OwedAmountsChart",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-OBSERVATORY-AUTH",
+								"value": "{{token}}",
+								"description": "The X-OBSERVATORY-AUTH header is used for authentication. Clients must provide a valid authentication token in the X-OBSERVATORY-AUTH header when making requests to endpoints that require authentication.",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/owedamountschart/:id/:date_from/:date_to?format=",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"owedamountschart",
+								":id",
+								":date_from",
+								":date_to"
+							],
+							"query": [
+								{
+									"key": "format",
+									"value": "",
+									"description": "The response format, either csv or json."
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "NAO",
+									"description": "The ID of the operator."
+								},
+								{
+									"key": "date_from",
+									"value": "2022-01-01",
+									"description": "The starting date of the range."
+								},
+								{
+									"key": "date_to",
+									"value": "2023-01-31",
+									"description": "The ending date of the range."
+								}
+							]
+						},
+						"description": "This endpoint retrieves the monthly amounts that are owed to an operator within a given date range. It also returns the operators that owe these amounts. It requires the `id` , `date_from` and `date_to` parameters."
+					},
+					"response": []
+				},
+				{
+					"name": "RevenueDistribution",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-OBSERVATORY-AUTH",
+								"value": "{{token}}",
+								"description": "The X-OBSERVATORY-AUTH header is used for authentication. Clients must provide a valid authentication token in the X-OBSERVATORY-AUTH header when making requests to endpoints that require authentication.",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/revenuedistribution/:id/:date_from/:date_to?format=",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"revenuedistribution",
+								":id",
+								":date_from",
+								":date_to"
+							],
+							"query": [
+								{
+									"key": "format",
+									"value": "",
+									"description": "The response format, either csv or json."
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "EG",
+									"description": "The ID of the operator."
+								},
+								{
+									"key": "date_from",
+									"value": "2022-01-01",
+									"description": "The starting date of the range."
+								},
+								{
+									"key": "date_to",
+									"value": "2023-01-31",
+									"description": "The ending date of the range."
+								}
+							]
+						},
+						"description": "This endpoint retrieves the total revenues from toll passes on roads that belong to a specific operator within a given date range. It requires the `id` , `date_from` and `date_to` parameters."
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseURL",
+			"value": "http://localhost:9115/api",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
