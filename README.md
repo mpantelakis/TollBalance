@@ -158,3 +158,68 @@ se2408 -h
 ```
 
 This will display a list of all available commands and options for interacting with the backend.
+
+## Testing
+
+## API Functional Testing with Postman
+
+The tests focus on:
+
+- **Expected Status Code Responses**: Ensures the API returns the correct HTTP status codes, indicating the success or failure of the request.
+- **Response Structure**: Verifies that the structure of the API response matches the expected object format or data type, such as JSON or CSV.
+- **Content-Type Verification**: Confirms that the response includes the correct Content-Type header, ensuring the response format is as expected.
+- **Strict Data Validation**: Ensures the response body adheres to a predefined JSON schema or CSV format, validating the structure of individual objects and arrays.
+
+### Using the Postman Collection
+
+To facilitate testing the API endpoints, a Postman collection is available for download from the project repository. This collection includes predefined requests for all the main API operations, such as authentication, health checks, and data retrieval.
+
+### Using the Postman Collection
+
+### 1. Download the Collection:
+
+- Go to the documentation directory in the project repo.
+- Download the Postman_Collection.json file.
+- Import into Postman:
+
+### 2. Import the Collection
+
+- Go to File in Postman and import the collection by uploading the downloaded Postman_Collection.json.
+
+### 3. Authenticate:
+
+- Use the POST /auth/login endpoint to get a JWT token for authorized requests.
+
+### 4. Make Requests and Review Responses:
+
+- Select a request from the collection and click Send to execute.
+- Check the response in the Postman window.
+
+## CLI Testing
+
+This suite of tests ensures that the command-line interface (CLI) behaves as expected in various scenarios. The tests focus on:
+
+### Authentication:
+
+- Verifying that users need to be authenticated before accessing any commands.
+- Checking that invalid credentials result in an error.
+
+### Command Execution:
+
+- Testing that commands execute successfully when the user is properly authenticated.
+- Ensuring the system handles expected output correctly.
+
+### Authorization Handling:
+
+- Ensuring that users without valid authentication cannot access restricted commands.
+- Verifying that appropriate error messages are shown for unauthorized access.
+
+### Input Validation:
+
+- Ensuring that invalid or improperly formatted inputs are caught and result in meaningful error messages.
+
+### Edge Cases:
+
+- Verifying that the system behaves appropriately when no data is found or when unexpected scenarios occur.
+
+These tests help ensure that the CLI commands function securely, handle errors gracefully, and provide accurate feedback.
