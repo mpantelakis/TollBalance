@@ -224,6 +224,24 @@ This suite of tests ensures that the command-line interface (CLI) behaves as exp
 
 These tests help ensure that the CLI commands function securely, handle errors gracefully, and provide accurate feedback.
 
+## Running CLI Tests
+
+To ensure the correctness of the CLI commands, Jest is used for testing.
+
+Navigate to the cli-client folder:
+
+```bash
+cd cli-client
+```
+
+Execute the following command inside the cli-client directory to run all CLI tests:
+
+```bash
+npm test
+```
+
+By following these steps, you can efficiently test the CLI commands to ensure they function correctly and handle various scenarios as expected.
+
 ## AI Assistance Logs
 
 ### Overview:
@@ -231,6 +249,7 @@ These tests help ensure that the CLI commands function securely, handle errors g
 Throughout our development process, we have integrated AI tools to support various project phases. The AI_logs folder in our repository serves as a dedicated space for recording these interactions. Each AI-generated response, along with the corresponding prompt, is systematically stored for future reference and analysis.
 
 ### Contents of the AI Logs:
+
 The AI_logs folder contains multiple ZIP files, each corresponding to an AI interaction related to a specific aspect of the project. The naming convention for these files is:
 
 `YYYY-MM-DD-[phase]-[id].zip`
@@ -252,40 +271,43 @@ For instance, a zip file could contain:
 2. `questionnaire.json` - The summary of the interaction with the AI toold for the dialog provided in the .txt file.
 
 ### Example JSON Record:
+
 Each AI interaction is documented in a structured JSON format like the following:
+
 ```json
 {
   "answers": {
-      "phase": "architecture",
-      "action": "architectural decision",
-      "scope": "frontend",
-      "action experience": 2,
-      "language": "n/a",
-      "other language": "<fill in>",
-      "aimodel": "chatgpt",
-      "aimodel version": "GPT-4o",
-      "open source aimodel": "<fill in>",
-      "tool option":  "online free",
-      "experience with tool": 4,
-      "time allocated (h)": "1",
-      "time saved estimate (h)": "2", 
-      "quality of ai help": 4,
-      "knowledge acquired": 4,
-      "generic feeling - now": 4,
-      "generic feeling - future": 4,
-      "threat level": 4,
-      "notes": "<fill in>"
-      }
+    "phase": "architecture",
+    "action": "architectural decision",
+    "scope": "frontend",
+    "action experience": 2,
+    "language": "n/a",
+    "other language": "<fill in>",
+    "aimodel": "chatgpt",
+    "aimodel version": "GPT-4o",
+    "open source aimodel": "<fill in>",
+    "tool option": "online free",
+    "experience with tool": 4,
+    "time allocated (h)": "1",
+    "time saved estimate (h)": "2",
+    "quality of ai help": 4,
+    "knowledge acquired": 4,
+    "generic feeling - now": 4,
+    "generic feeling - future": 4,
+    "threat level": 4,
+    "notes": "<fill in>"
+  }
 }
 ```
+
 This structured format ensures consistency in documenting AI interactions and helps in assessing the impact of AI tools on our development process.
 
 ### Purpose and Use
+
 The AI log serves as a structured record of our interactions with AI tools throughout the development process. Its key objectives include:
 
 - **Documenting AI Interactions:** This log provides a transparent and organized account of how AI tools contributed to different phases of the project, ensuring traceability and accountability.
 - **Assessing AI's Effectiveness:** By analyzing these records, we can evaluate the impact of AI assistance, measuring efficiency gains, knowledge acquisition, and overall usefulness in software development.
 - **Guiding Future Projects:** These logs serve as a valuable resource for future teams, offering insights into best practices, potential challenges, and the evolving role of AI in engineering workflows.
-  
-By systematically capturing these interactions, we aim to refine our understanding of AI’s capabilities, identify areas for improvement, and explore its long-term potential in software development.
 
+By systematically capturing these interactions, we aim to refine our understanding of AI’s capabilities, identify areas for improvement, and explore its long-term potential in software development.
