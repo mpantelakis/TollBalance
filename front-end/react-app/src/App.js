@@ -6,7 +6,6 @@ import Logout from './Logout/Logout';
 import NotSettled from './NotSettled/NotSettled';
 import NotVerified from './NotVerified/NotVerified';
 import Homepage from './Homepage/Homepage';
-import DateCalendarViews from './DateCalendarViews/DateCalendarViews';
 import SelectDiagram from './SelectDiagram/SelectDiagram';
 import TrafficVariationForRoadChart from './TrafficVariationForRoadChart/TrafficVariationForRoadChart';
 import TrafficDistributionAcrossRoads from './TrafficDistributionAcrossRoads/TrafficDistributionAcrossRoads';
@@ -111,10 +110,6 @@ function App() {
 
           <Route path="*" element={<Navigate to="/" />} />
 
-          <Route 
-            path="/calendar" 
-            element={isAuthenticated ? <DateCalendarViews /> : <Navigate to="/" replace />} 
-          />
 
           <Route 
           path="/selectdiagram" 
