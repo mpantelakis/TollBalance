@@ -148,7 +148,7 @@ After setting up the CLI client, you can use the command-line tool to interact w
 
 ```bash
 chmod +x index.js
-npm link
+sudo npm link
 ```
 
 To view all the available options for the CLI tool, run the following command:
