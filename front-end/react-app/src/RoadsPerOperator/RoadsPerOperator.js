@@ -40,7 +40,7 @@ export default function RoadsPerOperator({ setSelectedRoad }) {
 
   return (
     <div>
-      <label>Select Road: </label>
+      <label style={{ fontWeight: 'bold' }}>Select Road:</label>
       <select onChange={handleRoadChange}>
         <option value="">--Select Road--</option>
         {roads.map((road) => (

@@ -86,7 +86,7 @@ export default function RevenueDistributionAcrossRoads() {
   return (
     <div>
       <ChooseDiagramButton />
-      <h2>Revenue Distribution Across Roads</h2>
+      <h2 style={{ color: 'white', fontSize: '25px' }}>Revenue Distribution Across Roads</h2>
 
       {/* Date Selection */}
       <DateCalendarViews

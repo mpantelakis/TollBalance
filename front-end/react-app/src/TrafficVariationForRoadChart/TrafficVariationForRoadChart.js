@@ -113,7 +113,7 @@ export default function TrafficVariationForRoadChart() {
   return (
     <div>
       <ChooseDiagramButton />
-      <h2>Traffic Variation Per Road Chart</h2>
+      <h2 style={{ color: 'white', fontSize: '25px' }}>Traffic Variation Per Road Chart</h2>
 
       {/* Road Selection Component */}
       <RoadsPerOperator setSelectedRoad={setSelectedRoad} />

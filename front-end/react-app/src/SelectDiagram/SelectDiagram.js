@@ -37,7 +37,7 @@ function SelectDiagram() {
     <HomeButton />
     <div className="select-diagram-wrapper">
       <div className="select-diagram-container">
-        <h1>Select a Diagram</h1>
+      <h1 style={{ color: 'white', fontSize: '36px' }}>Select a Diagram</h1>
         <div className="buttons-container">
           {/* Diagram 1 */}
           <div className="button-container">

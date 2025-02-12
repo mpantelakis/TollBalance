@@ -78,7 +78,7 @@ export default function DebtHistoryChart() {
   return (
     <div>
       <ChooseDiagramButton />
-      <h2>Debt History Over Time</h2>
+      <h2 style={{ color: 'white', fontSize: '25px' }}>Debt History Over Time</h2>
       <DateCalendarViews
         onDateChange={(start, end) => {
           setStartDate(start);

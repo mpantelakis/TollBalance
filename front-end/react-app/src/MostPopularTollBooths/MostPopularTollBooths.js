@@ -74,7 +74,7 @@ export default function MostPopularTollBooths() {
   return (
     <div>
       <ChooseDiagramButton />
-      <h2>Most Popular Toll Booths</h2>
+      <h2 style={{ color: 'white', fontSize: '25px' }}>Most Popular Toll Booths</h2>
 
       {/* Error message */}
       {error && <div style={{ color: "red" }}>{error}</div>}

@@ -83,7 +83,7 @@ export default function OwedAmountsChart() {
   return (
     <div>
       <ChooseDiagramButton />
-      <h2>Owed Amounts Over Time</h2>
+      <h2 style={{ color: 'white', fontSize: '25px' }}>Owed Amounts Over Time</h2>
       <DateCalendarViews
         onDateChange={(start, end) => {
           setStartDate(start);

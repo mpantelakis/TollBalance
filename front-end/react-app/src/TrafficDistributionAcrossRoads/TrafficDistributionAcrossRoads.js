@@ -86,7 +86,7 @@ export default function TrafficDistributionAcrossRoads() {
   return (
     <div>
       <ChooseDiagramButton />
-      <h2>Traffic Distribution Across Roads</h2>
+      <h2 style={{ color: 'white', fontSize: '25px' }}>Traffic Distribution Across Roads</h2>
 
       {/* Date Selection */}
       <DateCalendarViews
