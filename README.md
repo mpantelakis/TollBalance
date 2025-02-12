@@ -178,8 +178,8 @@ To facilitate testing the API endpoints, a Postman collection is available for d
 
 ### 1. Download the Collection:
 
-- Go to the documentation directory in the project repo.
-- Download the Postman_Collection.json file.
+- Go to the `documentation` directory in the project repo.
+- Download the Toll_Ballance_REST_API.postman_collection.json file.
 - Import into Postman:
 
 ### 2. Import the Collection
