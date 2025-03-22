@@ -8,13 +8,13 @@ The TollBalance platform is designed to provide comprehensive solutions for mana
 
 ### Contributors
 
-- **Antigoni Karanika**: The architect of the website’s API, Antigoni built a solid and scalable backend for the platform. She also crafted the comprehensive documentation, ensuring the API was both easy to use and well understood.
+- [Antigoni Karanika](https://github.com/antigonikaranika): The architect of the website’s API, Antigoni built a solid and scalable backend for the platform. She also crafted the comprehensive documentation, ensuring the API was both easy to use and well understood.
 
 - **Giannis Dimoulas**: The database guru, Giannis handled the intricate details of data management, crafting complex queries that powered the API endpoints. His work ensured the platform’s data layer was optimized and highly reliable.
 
-- **Iliana Maggiori**: The creative mastermind behind the frontend, Iliana brought the software to life with a dynamic and intuitive user interface. Her focus was on delivering a seamless user experience, making sure the platform was not only functional but also visually appealing.
+- [Enrica-Iliana Maggiori](https://github.com/ilianamaggiori): The creative mastermind behind the frontend, Iliana brought the software to life with a dynamic and intuitive user interface. Her focus was on delivering a seamless user experience, making sure the platform was not only functional but also visually appealing.
 
-- **Manolis Pantelakis**: The driving force behind the project’s organization and oversight. Manolis took charge of developing the functional API endpoints and the CLI, ensuring both were robust and efficient. He also led the testing efforts for both the functional API and CLI, while documenting the entire process with meticulous attention to detail.
+- [Manolis Pantelakis](https://github.com/mpantelakis): The driving force behind the project’s organization and oversight. Manolis took charge of developing the functional API endpoints and the CLI, ensuring both were robust and efficient. He also led the testing efforts for both the functional API and CLI, while documenting the entire process with meticulous attention to detail.
 
 The development of the UML diagrams and the SRS document was a true team effort, showcasing our collective commitment to building a solid foundation for the project.
 
