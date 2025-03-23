@@ -10,7 +10,7 @@ The TollBalance platform is designed to provide comprehensive solutions for mana
 
 - [Antigoni Karanika](https://github.com/antigonikaranika): The architect of the website’s API, Antigoni built a solid and scalable backend for the platform. She also crafted the comprehensive documentation, ensuring the API was both easy to use and well understood.
 
-- **Giannis Dimoulas**: The database guru, Giannis handled the intricate details of data management, crafting complex queries that powered the API endpoints. His work ensured the platform’s data layer was optimized and highly reliable.
+- [Giannis Dimoulas](https://github.com/MastroGiannis): The database guru, Giannis handled the intricate details of data management, crafting complex queries that powered the API endpoints. His work ensured the platform’s data layer was optimized and highly reliable.
 
 - [Enrica-Iliana Maggiori](https://github.com/ilianamaggiori): The creative mastermind behind the frontend, Iliana brought the software to life with a dynamic and intuitive user interface. Her focus was on delivering a seamless user experience, making sure the platform was not only functional but also visually appealing.
 
@@ -159,6 +159,28 @@ se2408 -h
 
 This will display a list of all available commands and options for interacting with the backend.
 
+### 4. User Login Credentials
+
+To access the system, you can use the following default credentials:
+
+- **Username:** `egnatia`  
+- **Password:** `password`
+
+## REST API Documentation  
+
+The REST API documentation is available in the following formats:  
+
+### Postman Collection  
+
+- **Path:** `documentation/Toll_Ballance_REST_API.postman_collection.json`  
+- Import this file into Postman to explore and test the API endpoints.  
+
+### OpenAPI Specification  
+
+- **Path:** `documentation/toll_balance_openapi.yaml`  
+- This file follows the OpenAPI standard and can be used with tools like Swagger UI for interactive API exploration.  
+
+
 ## Testing
 
 ## API Functional Testing with Postman
@@ -173,8 +195,6 @@ The tests focus on:
 ### Using the Postman Collection
 
 To facilitate testing the API endpoints, a Postman collection is available for download from the project repository. This collection includes predefined requests for all the main API operations, such as authentication, health checks, and data retrieval.
-
-### Using the Postman Collection
 
 ### 1. Download the Collection:
 
