@@ -166,21 +166,6 @@ To access the system, you can use the following default credentials:
 - **Username:** `egnatia`  
 - **Password:** `password`
 
-## REST API Documentation  
-
-The REST API documentation is available in the following formats:  
-
-### Postman Collection  
-
-- **Path:** `documentation/Toll_Ballance_REST_API.postman_collection.json`  
-- Import this file into Postman to explore and test the API endpoints.  
-
-### OpenAPI Specification  
-
-- **Path:** `documentation/toll_balance_openapi.yaml`  
-- This file follows the OpenAPI standard and can be used with tools like Swagger UI for interactive API exploration.  
-
-
 ## Testing
 
 ## API Functional Testing with Postman
@@ -261,6 +246,20 @@ npm test
 ```
 
 By following these steps, you can efficiently test the CLI commands to ensure they function correctly and handle various scenarios as expected.
+
+## REST API Documentation  
+
+The REST API documentation is available in the following formats:  
+
+### Postman Collection  
+
+- **Path:** `documentation/Toll_Ballance_REST_API.postman_collection.json`  
+- Import this file into Postman to explore and test the API endpoints.  
+
+### OpenAPI Specification  
+
+- **Path:** `documentation/toll_balance_openapi.yaml`  
+- This file follows the OpenAPI standard and can be used with tools like Swagger UI for interactive API exploration.  
 
 ## AI Assistance Logs
 
